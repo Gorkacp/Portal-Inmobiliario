@@ -8,6 +8,9 @@ const router = useRouter();
 
 <template>
   <div id="app">
+    <!-- Menú de navegación -->
+
+    <!-- Contenido principal -->
     <main>
       <RouterView />
     </main>
