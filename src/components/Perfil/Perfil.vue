@@ -155,9 +155,11 @@ function verificarSesion() {
       cargarPublicacionesUsuario(user.uid);
     } else {
       isLoggedIn.value = false;
+      router.push('/login'); // 🔁 Redirige al login si no hay usuario
     }
   });
 }
+
 
 onMounted(() => {
   verificarSesion();
