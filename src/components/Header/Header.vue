@@ -29,21 +29,23 @@
 </script>
 
 <style scoped>
+/* Asegura que el contenedor principal ocupa todo el ancho y se alinea correctamente */
 .header {
   background-color: white;
   padding: 10px 20px;
   color: #333;
   border-bottom: 1px solid #ddd;
+  display: flex; /* Flexbox para el contenedor */
+  justify-content: center; /* Centra el contenido */
 }
 
 .menu {
   list-style: none;
   display: flex;
-  justify-content: center;
-  gap: 200px;
+  justify-content: center; /* Centra los elementos dentro de la lista */
+  gap: 200px; /* Espacio entre los botones */
   margin: 0;
   padding: 0;
-  flex-wrap: wrap; /* Para que se ajusten si el ancho no cabe */
 }
 
 .menu li {
@@ -77,7 +79,7 @@
 /* Tablet */
 @media (max-width: 1024px) {
   .menu {
-    gap: 100px;
+    gap: 150px; /* Ajusta el espacio entre los botones en tabletas */
   }
 
   .menu i {
@@ -92,7 +94,7 @@
 /* Móvil grande */
 @media (max-width: 768px) {
   .menu {
-    gap: 50px;
+    gap: 125px; /* Ajusta el espacio entre los botones en móviles grandes */
   }
 
   .menu i {
@@ -107,7 +109,8 @@
 /* Móvil pequeño */
 @media (max-width: 480px) {
   .menu {
-    gap: 25px;
+    gap: 100px; /* Ajusta el espacio entre los botones en móviles pequeños */
+    justify-content: center; /* Asegura que el menú esté centrado */
   }
 
   .menu i {

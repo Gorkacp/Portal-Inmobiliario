@@ -117,9 +117,12 @@ async function iniciarSesionConGoogle() {
   display: flex;
   flex-direction: column;
   background-color: #f0f1f6;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
+
 .login-card {
-  margin: auto;
   width: 100%;
   max-width: 400px;
   background: white;
@@ -267,5 +270,86 @@ async function iniciarSesionConGoogle() {
   position: fixed;
   bottom: 0;
   width: 100%;
+}
+
+/* Estilos responsivos */
+@media (max-width: 1024px) {
+  .login-card {
+    width: 90%;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .input-pill input {
+    font-size: 0.95rem;
+  }
+
+  .btn-submit {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .divider {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    width: 80%;
+  }
+
+  .title {
+    font-size: 1.4rem;
+  }
+
+  .input-pill input {
+    font-size: 1rem;
+  }
+
+  .btn-submit {
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1rem;
+  }
+
+  .divider {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    width: 95%;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .input-pill input {
+    font-size: 1rem;
+  }
+
+  .btn-submit {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .divider {
+    font-size: 0.7rem;
+  }
+
+  .btn-google {
+    padding: 0.5rem;
+  }
+
+  .signup-link {
+    font-size: 0.75rem;
+  }
 }
 </style>
