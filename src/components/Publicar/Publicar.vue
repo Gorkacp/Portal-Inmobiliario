@@ -1,5 +1,11 @@
 <template>
   <div class="contenedor">
+    <!-- Botón de volver -->
+    <!-- Botón de volver con icono -->
+    <button class="btn-volver" @click="volverPerfil">
+      <i class="fas fa-arrow-left icono-flecha"></i> Volver
+    </button>
+
     <h1>Crear publicación</h1>
 
     <form @submit.prevent="crearPublicacion">
@@ -150,6 +156,11 @@ function crearPublicacion() {
     router.push({ name: 'VistaCasa', params: { id: docRef.id } })
   })
 }
+
+// Función para volver al perfil
+function volverPerfil() {
+  router.push({ name: 'Perfil' }) // Asegúrate que la ruta se llama 'Perfil'
+}
 </script>
 
 <style scoped>
@@ -230,5 +241,24 @@ button:hover {
   background-color: #00c278;
   color: white;
   border-color: #00c278;
+}
+
+/* Estilos del botón de volver */
+.btn-volver {
+  background: none;
+  color: #00c278;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.btn-volver:hover {
+  color: #007f50;
+  transform: translateX(-5px);
 }
 </style>

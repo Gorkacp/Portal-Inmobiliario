@@ -27,13 +27,10 @@
 
     <!-- Categorías -->
     <div class="categories">
-      <!-- Categoría de Alquiler -->
       <div class="category" @click="goToCategory('renta')">
         <h2>Casas en Alquiler</h2>
         <img src="/2.webp" alt="Casas en Renta" />
       </div>
-
-      <!-- Categoría de Venta -->
       <div class="category" @click="goToCategory('venta')">
         <h2>Casas en Venta</h2>
         <img src="/1.webp" alt="Casas en Venta" />
@@ -64,7 +61,7 @@ const fetchProducts = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, 'casas'));
     const fetchedProducts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    
+
     rentProducts.value = fetchedProducts.filter((product) => product.tipo === 'Renta');
     saleProducts.value = fetchedProducts.filter((product) => product.tipo === 'Venta');
     products.value = fetchedProducts;
@@ -75,37 +72,26 @@ const fetchProducts = async () => {
   }
 };
 
-// Llamar a la función al montar el componente
 onMounted(() => {
   fetchProducts();
 });
 
-// Método para hacer el desplazamiento del carrusel
 const moveCarousel = (direction) => {
   if (direction === 'next') {
-    if (currentIndex.value < products.value.length - 1) {
-      currentIndex.value++;
-    } else {
-      currentIndex.value = 0;
-    }
+    currentIndex.value = (currentIndex.value + 1) % products.value.length;
   } else {
-    if (currentIndex.value > 0) {
-      currentIndex.value--;
-    } else {
-      currentIndex.value = products.value.length - 1;
-    }
+    currentIndex.value =
+      (currentIndex.value - 1 + products.value.length) % products.value.length;
   }
 };
 
-// Función para redirigir a las categorías
 const goToCategory = (category) => {
   if (category === 'renta') {
-    router.push({ name: 'Alquiler' });  // Cambié 'Renta' por 'Alquiler'
+    router.push({ name: 'Alquiler' });
   } else if (category === 'venta') {
-    router.push({ name: 'Venta' });  // Cambié 'Venta' por 'Venta'
+    router.push({ name: 'Venta' });
   }
 };
-
 </script>
 
 <style scoped>
@@ -113,7 +99,19 @@ const goToCategory = (category) => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-bottom: 60px; /* Espacio para el header fijo */
+  padding-bottom: 60px;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .main-content {
@@ -125,20 +123,12 @@ const goToCategory = (category) => {
 h1 {
   color: #000000;
   margin-bottom: 10px;
-  font-family: 'Poppins', sans-serif;
   font-weight: 700;
-}
-
-p {
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-  color: #ffffff;
-  font-family: 'Poppins', sans-serif;
 }
 
 /* Carrusel */
 .carousel-container {
-  margin-top: 0px;
+  margin-top: 0;
   display: flex;
   justify-content: center;
   position: relative;
@@ -147,9 +137,7 @@ p {
 
 .carousel {
   display: flex;
-  gap: 0px;
   transition: all 0.3s ease;
-  scroll-snap-type: x mandatory;
   overflow-x: hidden;
 }
 
@@ -158,6 +146,7 @@ p {
   flex-shrink: 0;
   border-radius: 8px;
   position: relative;
+  animation: fadeIn 0.5s ease;
 }
 
 .carousel-item img {
@@ -177,19 +166,8 @@ p {
   border-radius: 5px;
 }
 
-.carousel-info h3 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.carousel-info p {
-  margin: 5px 0;
-  font-size: 1rem;
-}
-
-/* Botones de navegación del carrusel */
-.carousel-prev, .carousel-next {
+.carousel-prev,
+.carousel-next {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -213,16 +191,26 @@ p {
 /* Categorías */
 .categories {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: stretch;
   gap: 20px;
-  margin-top: 10px;
+  margin: 20px;
+  flex-wrap: nowrap;
+  animation: fadeIn 0.8s ease;
 }
 
 .category {
   flex: 1;
   text-align: center;
   cursor: pointer;
-  position: relative;
+  transition: transform 0.3s ease;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.category:hover {
+  transform: scale(1.03);
 }
 
 .category h2 {
@@ -232,17 +220,60 @@ p {
 
 .category img {
   width: 100%;
-  height: 300px; /* Cambié la altura de la imagen para hacerla más visible */
+  height: 250px;
   object-fit: cover;
   border-radius: 8px;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease-in-out;
 }
 
 .category img:hover {
   transform: scale(1.05);
 }
 
-/* Header fijo como Footer */
+/* Responsive para pantallas más pequeñas (sin apilar) */
+@media (max-width: 768px) {
+  .categories {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+
+  .category {
+    flex: 1 1 45%;
+    padding: 5px;
+  }
+
+  .category h2 {
+    font-size: 1.1rem;
+  }
+
+  .category img {
+    height: 180px;
+  }
+
+  .carousel-item img {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .category {
+    flex: 1 1 48%;
+  }
+
+  .category h2 {
+    font-size: 1rem;
+  }
+
+  .category img {
+    height: 150px;
+  }
+
+  .carousel-item img {
+    height: 200px;
+  }
+}
+
+/* Footer fijo */
 .fixed-header {
   position: fixed;
   bottom: 0;
