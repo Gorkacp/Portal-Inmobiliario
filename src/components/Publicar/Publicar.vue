@@ -79,9 +79,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { auth, db } from '../../firebase/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
-import { collection, addDoc, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore'
+import { collection, addDoc } from 'firebase/firestore'
+
+// Router para redireccionar
+const router = useRouter()
 
 // Usuario actual
 const usuario = ref(null)
@@ -103,8 +107,8 @@ const form = ref({
 // Imágenes en base64
 const imagenes = ref([])
 
-onMounted(function () {
-  onAuthStateChanged(auth, function (user) {
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
     if (user) {
       usuario.value = user
     }
@@ -117,7 +121,7 @@ function seleccionarImagenes(evento) {
 
   archivos.forEach((archivo) => {
     const lector = new FileReader()
-    lector.onload = function (e) {
+    lector.onload = (e) => {
       imagenes.value.push(e.target.result)
     }
     lector.readAsDataURL(archivo)
@@ -125,15 +129,9 @@ function seleccionarImagenes(evento) {
 }
 
 function crearPublicacion() {
-  if (!usuario.value) {
-    return
-  }
+  if (!usuario.value) return
 
-  guardarEnBaseDeDatos(imagenes.value)
-}
-
-function guardarEnBaseDeDatos(urls) {
-  let nuevaCasa = {
+  const nuevaCasa = {
     tipo: form.value.tipo,
     nombre: form.value.nombre,
     habitaciones: form.value.habitaciones,
@@ -144,46 +142,13 @@ function guardarEnBaseDeDatos(urls) {
     enOferta: form.value.enOferta === 'true',
     precio: form.value.precio,
     descuento: form.value.descuento,
-    imagenes: urls,
+    imagenes: imagenes.value,
     usuarioID: usuario.value.uid
   }
 
-  addDoc(collection(db, 'casas'), nuevaCasa).then(function () {
-    limpiarFormulario()
+  addDoc(collection(db, 'casas'), nuevaCasa).then((docRef) => {
+    router.push({ name: 'VistaCasa', params: { id: docRef.id } })
   })
-}
-
-function limpiarFormulario() {
-  form.value = {
-    tipo: 'Venta',
-    nombre: '',
-    habitaciones: 1,
-    baños: 1,
-    estacionamiento: 'Sí',
-    amueblado: 'Sí',
-    direccion: '',
-    enOferta: 'false',
-    precio: 0,
-    descuento: 0
-  }
-  imagenes.value = []
-}
-
-function cargarCasaParaEditar(id) {
-  const casa = listaCasas.value.find(casa => casa.id === id)
-  form.value = {
-    tipo: casa.tipo,
-    nombre: casa.nombre,
-    habitaciones: casa.habitaciones,
-    baños: casa.baños,
-    estacionamiento: casa.estacionamiento,
-    amueblado: casa.amueblado,
-    direccion: casa.direccion,
-    enOferta: casa.enOferta ? 'true' : 'false',
-    precio: casa.precio,
-    descuento: casa.descuento
-  }
-  imagenes.value = casa.imagenes
 }
 </script>
 

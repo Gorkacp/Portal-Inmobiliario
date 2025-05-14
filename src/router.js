@@ -3,7 +3,7 @@ import Inicio from './components/Inicio/Inicio.vue';
 import Login from './components/Login/Login.vue';
 import Offers from './components/Ofertas/Ofertas.vue';
 import Profile from './components/Perfil/Perfil.vue';
-import Register from './components/Login/Register.vue';
+import Register from './components/Login/register.vue';
 import Publicar from './components/Publicar/Publicar.vue'; 
 import VistaCasa from './Views/VistaCasa.vue'; 
 import Ventas from './components/Venta/Venta.vue';
