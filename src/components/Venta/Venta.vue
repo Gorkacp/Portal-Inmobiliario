@@ -201,4 +201,90 @@ h1 {
   width: 80px;
   height: 80px;
 }
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 20px 15px 80px;
+  }
+
+  .tarjeta-casa {
+    flex-direction: column;
+  }
+
+  .imagen-casa {
+    width: 100%;
+    height: 200px;
+  }
+
+  .detalles-casa {
+    padding: 15px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .nombre-casa {
+    font-size: 1.2rem;
+  }
+
+  .ubicacion,
+  .habitaciones,
+  .banos,
+  .precio {
+    font-size: 0.95rem;
+  }
+
+  .imagen-casa {
+    height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .main-content {
+    padding: 20px 10px 70px;
+  }
+
+  .tarjeta-casa {
+    box-shadow: none;
+    border: 1px solid #eee;
+  }
+
+  .imagen-casa {
+    height: 160px;
+  }
+
+  .nombre-casa {
+    font-size: 1.1rem;
+  }
+
+  .ubicacion,
+  .habitaciones,
+  .banos,
+  .precio {
+    font-size: 0.9rem;
+  }
+
+  .precio {
+    font-size: 1rem;
+  }
+
+  .fixed-header {
+    padding: 8px 0;
+    font-size: 0.9rem;
+  }
+
+  .loader-gif {
+    width: 60px;
+    height: 60px;
+  }
+}
 </style>

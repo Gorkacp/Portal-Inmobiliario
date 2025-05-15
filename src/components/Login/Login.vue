@@ -51,12 +51,7 @@
       <div class="divider">O iniciar sesión con</div>
 
       <button @click="iniciarSesionConGoogle" class="btn-google">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"
-          alt="Logo de Google"
-          width="24"
-          height="24"
-        />
+        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Logo de Google" width="24" height="24" />
       </button>
 
       <router-link to="/register" class="signup-link">
