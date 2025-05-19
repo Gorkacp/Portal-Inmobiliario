@@ -33,10 +33,16 @@
       <!-- Mis Publicaciones -->
       <div class="seccion-publicaciones" v-if="misPublicaciones.length > 0">
         <h2>Mis publicaciones</h2>
-        <div v-for="publicacion in misPublicaciones" :key="publicacion.id" class="tarjeta-publicacion">
+        <div
+          v-for="publicacion in misPublicaciones"
+          :key="publicacion.id"
+          class="tarjeta-publicacion"
+          @click="irAVistaCasa(publicacion.id)"
+          style="cursor: pointer;"
+        >
           <div class="contenido-publicacion">
             <div class="info-publicacion">
-              <p> {{ publicacion.nombre }}</p>
+              <p>{{ publicacion.nombre }}</p>
               <p>{{ publicacion.direccion }}</p>
               <p>{{ publicacion.precio }} €</p>
             </div>
@@ -51,8 +57,8 @@
             </div>
           </div>
 
-          <!-- Botones para editar y eliminar -->
-          <div class="botones-publicacion">
+          <!-- Botones para editar y eliminar, con @click.stop para evitar la navegación -->
+          <div class="botones-publicacion" @click.stop>
             <button @click="irAEditar(publicacion.id)">Editar</button>
             <button @click="eliminarPublicacion(publicacion.id)">Eliminar</button>
           </div>
@@ -73,8 +79,21 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '../../firebase/firebase';
-import { onAuthStateChanged, signOut, updateProfile, updateEmail } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import {
+  onAuthStateChanged,
+  signOut,
+  updateProfile,
+  updateEmail,
+} from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  deleteDoc,
+} from 'firebase/firestore';
 import Header from '../Header/Header.vue';
 
 const usuario = ref(null);
@@ -90,7 +109,7 @@ const db = getFirestore();
 function cerrarSesion() {
   signOut(auth)
     .then(() => router.push('/login'))
-    .catch(error => console.error('Error al cerrar sesión:', error));
+    .catch((error) => console.error('Error al cerrar sesión:', error));
 }
 
 function irAPublicar() {
@@ -138,11 +157,15 @@ async function eliminarPublicacion(publicacionId) {
   try {
     const publicacionRef = doc(db, 'casas', publicacionId);
     await deleteDoc(publicacionRef);
-    // Actualizamos las publicaciones después de eliminar
     cargarPublicacionesUsuario(usuario.value.uid);
   } catch (error) {
     console.error('Error al eliminar publicación:', error);
   }
+}
+
+// Navega a la vista individual de la casa usando el nombre exacto "VistaCasa"
+function irAVistaCasa(id) {
+  router.push({ name: 'VistaCasa', params: { id } });
 }
 
 function verificarSesion() {
@@ -155,11 +178,10 @@ function verificarSesion() {
       cargarPublicacionesUsuario(user.uid);
     } else {
       isLoggedIn.value = false;
-      router.push('/login'); // 🔁 Redirige al login si no hay usuario
+      router.push('/login');
     }
   });
 }
-
 
 onMounted(() => {
   verificarSesion();
@@ -324,6 +346,6 @@ h1 {
 }
 
 .botones-publicacion button:hover {
-  background-color: #00c278;
+  background-color: #00a964;
 }
 </style>

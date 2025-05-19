@@ -159,7 +159,7 @@ function crearPublicacion() {
 
 // Función para volver al perfil
 function volverPerfil() {
-  router.push({ name: 'Perfil' }) // Asegúrate que la ruta se llama 'Perfil'
+  router.push({ name: 'Perfil' }) // Ruta de Perfil
 }
 </script>
 

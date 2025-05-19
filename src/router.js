@@ -8,6 +8,8 @@ import Publicar from './components/Publicar/Publicar.vue';
 import VistaCasa from './Views/VistaCasa.vue'; 
 import Ventas from './components/Venta/Venta.vue';
 import Alquiler from './components/Alquiler/Alquiler.vue';
+import Contacto from './components/Contacto/Contacto.vue';
+
 
 const routes = [
   { path: '/', name: 'Inicio', component: Inicio },
@@ -19,7 +21,8 @@ const routes = [
   { path: '/publicar/:id', name: 'EditarPublicacion', component: Publicar, props: true },
   { path: '/vista-casa/:id', name: 'VistaCasa', component: VistaCasa, props: true }, 
   { path: '/venta', name: 'Venta', component: Ventas },  
-  { path: '/alquiler', name: 'Alquiler', component: Alquiler },  
+  { path: '/alquiler', name: 'Alquiler', component: Alquiler },
+  { path: '/contacto', name: 'Contacto', component: Contacto},
 ];
 
 

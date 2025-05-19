@@ -1,13 +1,15 @@
 <template>
   <div>
-    <!-- Galería imágenes full width -->
+    <!-- Galería de imágenes a ancho completo -->
     <div class="galeria-imagenes">
-      <div v-for="(imagen, index) in casa.imagenes" :key="index" class="imagen-container">
-        <img :src="imagen" :alt="`Imagen ${index + 1}`" class="imagen-casa" />
+      <!-- Recorremos el array de imágenes de la casa -->
+      <div v-for="(imagen, indice) in casa.imagenes" :key="indice" class="imagen-container">
+        <!-- Mostramos cada imagen con su ruta y un texto alternativo -->
+        <img :src="imagen" :alt="`Imagen ${indice + 1}`" class="imagen-casa" />
       </div>
     </div>
 
-    <!-- Info casa full width pero texto a la izquierda -->
+    <!-- Información de la casa con texto alineado a la izquierda -->
     <section class="info-casa">
       <h2 class="titulo-info">{{ casa.nombre }} - {{ casa.precio }} €</h2>
       <p><i class="fas fa-map-marker-alt"></i> {{ casa.direccion }}</p>
@@ -22,9 +24,15 @@
       <p><i class="fas fa-home"></i> <strong>Tipo de propiedad:</strong> {{ casa.tipo }}</p>
     </section>
 
-    <!-- Mapa full width -->
+    <!-- Contenedor del mapa a ancho completo -->
     <div id="mapa" class="mapa"></div>
 
+    <!-- Botón para contactar al anunciante -->
+    <div class="contacto-boton-container">
+      <router-link to="/contacto" class="boton-contacto">Contactar con el anunciante</router-link>
+    </div>
+
+    <!-- Componente Header fijo en la parte inferior -->
     <Header class="fixed-header" />
   </div>
 </template>
@@ -38,43 +46,66 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import Header from '../components/Header/Header.vue'
 
+// Usamos la ruta actual para obtener el parámetro 'id' de la casa
 const route = useRoute()
+
+// Definimos una variable reactiva para almacenar los datos de la casa
 const casa = ref({ imagenes: [] })
 
+// Cuando el componente se monta, hacemos la consulta a Firestore para obtener los datos de la casa
 onMounted(async () => {
-  const id = route.params.id
-  const docRef = doc(db, 'casas', id)
-  const docSnap = await getDoc(docRef)
+  const idCasa = route.params.id // Obtenemos el ID de la casa desde la URL
+  const referenciaDocumento = doc(db, 'casas', idCasa) // Referencia al documento Firestore
+  const documento = await getDoc(referenciaDocumento) // Obtenemos el documento
 
-  if (docSnap.exists()) {
-    casa.value = docSnap.data()
+  if (documento.exists()) {
+    casa.value = documento.data() // Guardamos los datos de la casa en la variable reactiva
+
+    // Esperamos un poco para asegurar que el DOM esté actualizado y luego mostramos el mapa
     setTimeout(() => {
       mostrarMapa()
     }, 200)
   }
 })
 
+// Función para mostrar el mapa con la ubicación de la casa
 function mostrarMapa() {
+  // Si no hay dirección definida, no hacemos nada
   if (!casa.value.direccion) return
 
-  const mapa = L.map('mapa').setView([37.1773, -3.5986], 13)
+  // Inicializamos el mapa Leaflet en el div con id "mapa"
+  // Centramos inicialmente el mapa en unas coordenadas por defecto (Granada, España) y con zoom 13
+  const mapaLeaflet = L.map('mapa').setView([37.1773, -3.5986], 13)
+
+  // Añadimos las baldosas (tiles) del mapa usando OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
-  }).addTo(mapa)
+  }).addTo(mapaLeaflet)
 
-  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${casa.value.direccion}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.length > 0) {
-        const { lat, lon } = data[0]
-        mapa.setView([lat, lon], 15)
-        L.marker([lat, lon]).addTo(mapa)
+  // Usamos la API de Nominatim de OpenStreetMap para geocodificar la dirección (convertir texto a coordenadas)
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(casa.value.direccion)}`)
+    .then(respuesta => respuesta.json()) // Convertimos la respuesta a JSON
+    .then(datos => {
+      // Si recibimos resultados de la búsqueda
+      if (datos.length > 0) {
+        const latitud = datos[0].lat // Latitud del primer resultado
+        const longitud = datos[0].lon // Longitud del primer resultado
+
+        // Cambiamos la vista del mapa a la ubicación encontrada con zoom 15
+        mapaLeaflet.setView([latitud, longitud], 15)
+
+        // Añadimos un marcador en la posición encontrada
+        L.marker([latitud, longitud]).addTo(mapaLeaflet)
       }
+    })
+    .catch(error => {
+      console.error('Error al obtener la ubicación:', error)
     })
 }
 </script>
 
 <style>
+/* Estilos globales */
 body {
   margin: 0;
   background-color: #e5e7eb;
@@ -83,7 +114,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Galería imágenes full width */
+/* Galería imágenes a ancho completo */
 .galeria-imagenes {
   width: 100vw;
   max-width: 100%;
@@ -116,7 +147,7 @@ body {
   transform: scale(1.05);
 }
 
-/* Info casa full width, texto a la izquierda */
+/* Información de la casa */
 .info-casa {
   width: 100vw;
   max-width: 100%;
@@ -153,7 +184,7 @@ body {
   text-align: left;
 }
 
-/* Mapa full width */
+/* Contenedor del mapa */
 .mapa {
   width: 100vw;
   height: 300px;
@@ -163,7 +194,7 @@ body {
   box-shadow: none;
 }
 
-/* Header fijo */
+/* Header fijo al pie */
 .fixed-header {
   position: fixed;
   bottom: 0;
@@ -177,7 +208,30 @@ body {
   font-size: 1.1rem;
 }
 
-/* Responsive Styles */
+/* Contenedor del botón de contacto */
+.contacto-boton-container {
+  width: 100%;
+  text-align: center;
+  margin: 30px 0 100px 0; /* Margen inferior para espacio */
+}
+
+/* Estilo del botón */
+.boton-contacto {
+  background-color: #10b981;
+  color: white;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  font-weight: bold;
+}
+
+.boton-contacto:hover {
+  background-color: #0e9f6e;
+}
+
+/* Estilos responsivos */
 
 /* Pantallas pequeñas móviles */
 @media (max-width: 480px) {
