@@ -29,27 +29,30 @@
 </script>
 
 <style scoped>
-/* Asegura que el contenedor principal ocupa todo el ancho y se alinea correctamente */
 .header {
   background-color: white;
   padding: 10px 20px;
   color: #333;
   border-bottom: 1px solid #ddd;
-  display: flex; /* Flexbox para el contenedor */
-  justify-content: center; /* Centra el contenido */
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .menu {
   list-style: none;
   display: flex;
-  justify-content: center; /* Centra los elementos dentro de la lista */
-  gap: 200px; /* Espacio entre los botones */
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px; /* Cambiado a un valor fijo más pequeño */
   margin: 0;
   padding: 0;
 }
 
 .menu li {
-  display: inline;
+  /* Quitamos display inline para no interferir con flex */
 }
 
 .menu a {
@@ -79,22 +82,14 @@
 /* Tablet */
 @media (max-width: 1024px) {
   .menu {
-    gap: 150px; /* Ajusta el espacio entre los botones en tabletas */
-  }
-
-  .menu i {
-    font-size: 1.3rem;
-  }
-
-  .menu a {
-    font-size: 0.85rem;
+    gap: 24px;
   }
 }
 
 /* Móvil grande */
 @media (max-width: 768px) {
   .menu {
-    gap: 125px; /* Ajusta el espacio entre los botones en móviles grandes */
+    gap: 18px;
   }
 
   .menu i {
@@ -109,8 +104,7 @@
 /* Móvil pequeño */
 @media (max-width: 480px) {
   .menu {
-    gap: 100px; /* Ajusta el espacio entre los botones en móviles pequeños */
-    justify-content: center; /* Asegura que el menú esté centrado */
+    gap: 12px;
   }
 
   .menu i {

@@ -36,9 +36,9 @@
         <img src="/1.webp" alt="Casas en Venta" />
       </div>
     </div>
-
-    <Header class="fixed-header" />
   </div>
+      <Header class="fixed-header" />
+
 </template>
 
 <script setup>
@@ -95,11 +95,23 @@ const goToCategory = (category) => {
 </script>
 
 <style scoped>
+/* Reset básico para evitar márgenes y paddings extra */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden; /* Evita scroll horizontal global */
+  width: 100vw;
+}
+
 .page-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-bottom: 60px;
+  padding-bottom: 60px; /* Igual que altura del header fijo */
   animation: fadeIn 0.6s ease;
 }
 
@@ -195,18 +207,22 @@ h1 {
   align-items: stretch;
   gap: 20px;
   margin: 20px;
-  flex-wrap: nowrap;
-  animation: fadeIn 0.8s ease;
+  flex-wrap: wrap; /* Cambiado de nowrap a wrap para evitar overflow */
+  overflow-x: hidden; /* Evita scroll horizontal */
+  max-width: 100vw; /* No salir del viewport */
+  box-sizing: border-box;
 }
 
 .category {
-  flex: 1;
+  flex: 1 1 300px; /* base 300px con flex-grow y flex-shrink */
+  min-width: 280px; /* evita que sean demasiado estrechos */
   text-align: center;
   cursor: pointer;
   transition: transform 0.3s ease;
   background-color: #f9f9f9;
   border-radius: 10px;
   padding: 10px;
+  box-sizing: border-box;
 }
 
 .category:hover {
@@ -233,7 +249,7 @@ h1 {
 /* Responsive para pantallas más pequeñas (sin apilar) */
 @media (max-width: 768px) {
   .categories {
-    flex-wrap: nowrap;
+    flex-wrap: wrap; /* mantener wrap */
     gap: 10px;
   }
 
@@ -283,5 +299,7 @@ h1 {
   text-align: center;
   padding: 10px 0;
   z-index: 1000;
+  box-sizing: border-box;
 }
+
 </style>

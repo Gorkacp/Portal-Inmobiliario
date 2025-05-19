@@ -25,7 +25,5 @@ const router = useRouter();
   box-sizing: border-box;
 }
 
-main {
-  padding: 20px;
-}
+
 </style>

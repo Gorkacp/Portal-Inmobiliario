@@ -1,32 +1,39 @@
 <template>
-  <div class="contenedor-vista">
-    <h1>{{ casa.nombre }}</h1>
-
-    <div class="contenido">
-      <img :src="casa.imagenes[0]" alt="Imagen principal" class="imagen-casa" />
-
-      <div class="info">
-        <p><strong>Tipo:</strong> {{ casa.tipo }}</p>
-        <p><strong>Habitaciones:</strong> {{ casa.habitaciones }}</p>
-        <p><strong>Baños:</strong> {{ casa.baños }}</p>
-        <p><strong>Estacionamiento:</strong> {{ casa.estacionamiento }}</p>
-        <p><strong>Amueblado:</strong> {{ casa.amueblado }}</p>
-        <p><strong>Dirección:</strong> {{ casa.direccion }}</p>
-        <p><strong>Precio:</strong> {{ casa.precio }} €</p>
-        <p v-if="casa.enOferta === true"><strong>Descuento:</strong> {{ casa.descuento }} €</p>
+  <div>
+    <!-- Galería imágenes full width -->
+    <div class="galeria-imagenes">
+      <div v-for="(imagen, index) in casa.imagenes" :key="index" class="imagen-container">
+        <img :src="imagen" :alt="`Imagen ${index + 1}`" class="imagen-casa" />
       </div>
     </div>
 
+    <!-- Info casa full width pero texto a la izquierda -->
+    <section class="info-casa">
+      <h2 class="titulo-info">{{ casa.nombre }} - {{ casa.precio }} €</h2>
+      <p><i class="fas fa-map-marker-alt"></i> {{ casa.direccion }}</p>
+      <p>
+        <i class="fas fa-tag"></i> <strong>Estado:</strong> En venta
+        <span v-if="casa.enOferta === true"> - <strong>Descuento:</strong> {{ casa.descuento }} €</span>
+      </p>
+      <p><i class="fas fa-bed"></i> <strong>Habitaciones:</strong> {{ casa.habitaciones }}</p>
+      <p><i class="fas fa-bath"></i> <strong>Baños:</strong> {{ casa.baños }}</p>
+      <p><i class="fas fa-car"></i> <strong>Estacionamiento:</strong> {{ casa.estacionamiento }}</p>
+      <p><i class="fas fa-couch"></i> <strong>Amueblado:</strong> {{ casa.amueblado }}</p>
+      <p><i class="fas fa-home"></i> <strong>Tipo de propiedad:</strong> {{ casa.tipo }}</p>
+    </section>
+
+    <!-- Mapa full width -->
     <div id="mapa" class="mapa"></div>
+
+    <Header class="fixed-header" />
   </div>
-  <Header class="fixed-header" />
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebase/firebase.js' 
+import { db } from '../firebase/firebase.js'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import Header from '../components/Header/Header.vue'
@@ -41,7 +48,6 @@ onMounted(async () => {
 
   if (docSnap.exists()) {
     casa.value = docSnap.data()
-
     setTimeout(() => {
       mostrarMapa()
     }, 200)
@@ -51,7 +57,7 @@ onMounted(async () => {
 function mostrarMapa() {
   if (!casa.value.direccion) return
 
-  const mapa = L.map('mapa').setView([37.1773, -3.5986], 13) // Granada por defecto
+  const mapa = L.map('mapa').setView([37.1773, -3.5986], 13)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }).addTo(mapa)
@@ -68,58 +74,93 @@ function mostrarMapa() {
 }
 </script>
 
-<style scoped>
-.contenedor-vista {
-  max-width: 1000px;
-  margin: auto;
-  padding: 20px;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+<style>
+body {
+  margin: 0;
+  background-color: #e5e7eb;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 2rem; /* Título más grande */
-}
-
-.contenido {
+/* Galería imágenes full width */
+.galeria-imagenes {
+  width: 100vw;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  justify-content: space-between; /* Para asegurar separación adecuada */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.imagen-container {
+  flex: 0 0 100vw;
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  box-shadow: none;
 }
 
 .imagen-casa {
-  width: 60%;
-  height: auto;
-  border-radius: 10px;
-  object-fit: cover;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
-}
-
-.info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-size: 16px;
-  padding-left: 20px; /* Separación de la imagen */
-}
-
-.info p {
-  line-height: 1.5; /* Para una mejor legibilidad */
-}
-
-.mapa {
   width: 100%;
-  height: 400px;
-  border-radius: 10px;
-  margin-top: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  height: 300px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.imagen-container:hover .imagen-casa {
+  transform: scale(1.05);
+}
+
+/* Info casa full width, texto a la izquierda */
+.info-casa {
+  width: 100vw;
+  max-width: 100%;
+  background-color: white;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  color: #1f2937;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+  text-align: left;
+}
+
+.info-casa p {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.info-casa i {
+  color: #10b981;
+  min-width: 20px;
+}
+
+.titulo-info {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1f2937;
+  text-align: left;
+}
+
+/* Mapa full width */
+.mapa {
+  width: 100vw;
+  height: 300px;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Header fijo */
@@ -130,7 +171,71 @@ h1 {
   background-color: white;
   border-top: 1px solid #ddd;
   text-align: center;
-  padding: 10px 0;
+  padding: 12px 0;
   z-index: 1000;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Responsive Styles */
+
+/* Pantallas pequeñas móviles */
+@media (max-width: 480px) {
+  .imagen-casa {
+    height: 200px;
+  }
+
+  .info-casa {
+    font-size: 1rem;
+    padding: 16px 16px;
+  }
+
+  .titulo-info {
+    font-size: 1.4rem;
+  }
+
+  .mapa {
+    height: 250px;
+  }
+}
+
+/* Tablets y pantallas medianas */
+@media (min-width: 481px) and (max-width: 768px) {
+  .imagen-casa {
+    height: 280px;
+  }
+
+  .info-casa {
+    font-size: 1.05rem;
+    padding: 20px 32px;
+  }
+
+  .titulo-info {
+    font-size: 1.6rem;
+  }
+
+  .mapa {
+    height: 300px;
+  }
+}
+
+/* Escritorio pequeño en adelante */
+@media (min-width: 769px) {
+  .imagen-casa {
+    height: 400px;
+  }
+
+  .info-casa {
+    font-size: 1.1rem;
+    padding: 24px 40px;
+  }
+
+  .titulo-info {
+    font-size: 1.8rem;
+  }
+
+  .mapa {
+    height: 400px;
+  }
 }
 </style>
