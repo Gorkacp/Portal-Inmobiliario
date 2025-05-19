@@ -17,7 +17,7 @@ const router = useRouter();
   </div>
 </template>
 
-<style scoped>
+<style>
 #app {
   font-family: 'Arial', sans-serif;
   margin: 0;
