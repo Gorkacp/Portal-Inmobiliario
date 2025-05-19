@@ -82,14 +82,14 @@
 /* Tablet */
 @media (max-width: 1024px) {
   .menu {
-    gap: 24px;
+    gap: 60px;
   }
 }
 
 /* Móvil grande */
 @media (max-width: 768px) {
   .menu {
-    gap: 18px;
+    gap: 40px;
   }
 
   .menu i {
@@ -104,7 +104,7 @@
 /* Móvil pequeño */
 @media (max-width: 480px) {
   .menu {
-    gap: 12px;
+    gap: 20px;
   }
 
   .menu i {

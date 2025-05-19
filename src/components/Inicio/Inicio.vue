@@ -12,6 +12,8 @@
           v-for="(product, index) in products"
           :key="product.id"
           v-show="currentIndex === index"
+          @click="goToProduct(product.id)"
+          style="cursor: pointer;"
         >
           <img :src="product.imagenes[0]" :alt="product.nombre" />
           <div class="carousel-info">
@@ -20,9 +22,17 @@
           </div>
         </div>
       </div>
-      <!-- Flechas de navegación -->
-      <button class="carousel-prev" @click="moveCarousel('prev')">◀</button>
-      <button class="carousel-next" @click="moveCarousel('next')">▶</button>
+
+      <!-- Puntos indicadores -->
+      <div class="carousel-dots">
+        <span
+          v-for="(product, index) in products"
+          :key="index"
+          class="dot"
+          :class="{ active: currentIndex === index }"
+          @click="currentIndex = index"
+        ></span>
+      </div>
     </div>
 
     <!-- Categorías -->
@@ -37,12 +47,11 @@
       </div>
     </div>
   </div>
-      <Header class="fixed-header" />
-
+  <Header class="fixed-header" />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { db } from '../../firebase/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import Header from '../Header/Header.vue';
@@ -74,16 +83,18 @@ const fetchProducts = async () => {
 
 onMounted(() => {
   fetchProducts();
-});
 
-const moveCarousel = (direction) => {
-  if (direction === 'next') {
-    currentIndex.value = (currentIndex.value + 1) % products.value.length;
-  } else {
-    currentIndex.value =
-      (currentIndex.value - 1 + products.value.length) % products.value.length;
-  }
-};
+  // Auto avance del carrusel cada 4 segundos
+  const interval = setInterval(() => {
+    if (products.value.length > 0) {
+      currentIndex.value = (currentIndex.value + 1) % products.value.length;
+    }
+  }, 4000);
+
+  onUnmounted(() => {
+    clearInterval(interval);
+  });
+});
 
 const goToCategory = (category) => {
   if (category === 'renta') {
@@ -91,6 +102,11 @@ const goToCategory = (category) => {
   } else if (category === 'venta') {
     router.push({ name: 'Venta' });
   }
+};
+
+// Nueva función para ir a la vista de la casa cuando se pulsa en la imagen del carrusel
+const goToProduct = (id) => {
+  router.push({ name: 'VistaCasa', params: { id } });
 };
 </script>
 
@@ -145,12 +161,14 @@ h1 {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  max-width: 100vw;
 }
 
 .carousel {
   display: flex;
   transition: all 0.3s ease;
   overflow-x: hidden;
+  width: 100%;
 }
 
 .carousel-item {
@@ -168,6 +186,7 @@ h1 {
   border-radius: 8px;
 }
 
+/* Info del carrusel (nombre y precio) */
 .carousel-info {
   position: absolute;
   bottom: 10px;
@@ -178,26 +197,44 @@ h1 {
   border-radius: 5px;
 }
 
+.carousel-info h3 {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.carousel-info p {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* Eliminar botones prev/next */
 .carousel-prev,
 .carousel-next {
+  display: none;
+}
+
+/* Puntos indicadores del carrusel */
+.carousel-dots {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  padding: 10px;
-  font-size: 1.5rem;
+  bottom: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 20;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  z-index: 10;
+  transition: background-color 0.3s ease;
 }
 
-.carousel-prev {
-  left: 10px;
-}
-
-.carousel-next {
-  right: 10px;
+.dot.active {
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 /* Categorías */
@@ -207,15 +244,15 @@ h1 {
   align-items: stretch;
   gap: 20px;
   margin: 20px;
-  flex-wrap: wrap; /* Cambiado de nowrap a wrap para evitar overflow */
-  overflow-x: hidden; /* Evita scroll horizontal */
-  max-width: 100vw; /* No salir del viewport */
+  flex-wrap: wrap;
+  overflow-x: hidden;
+  max-width: 100vw;
   box-sizing: border-box;
 }
 
 .category {
-  flex: 1 1 300px; /* base 300px con flex-grow y flex-shrink */
-  min-width: 280px; /* evita que sean demasiado estrechos */
+  flex: 1 1 300px;
+  min-width: 280px;
   text-align: center;
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -246,10 +283,9 @@ h1 {
   transform: scale(1.05);
 }
 
-/* Responsive para pantallas más pequeñas (sin apilar) */
+/* Responsive para pantallas más pequeñas */
 @media (max-width: 768px) {
   .categories {
-    flex-wrap: wrap; /* mantener wrap */
     gap: 10px;
   }
 
@@ -269,6 +305,14 @@ h1 {
   .carousel-item img {
     height: 250px;
   }
+
+  .carousel-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .carousel-info p {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -287,6 +331,14 @@ h1 {
   .carousel-item img {
     height: 200px;
   }
+
+  .carousel-info h3 {
+    font-size: 1rem;
+  }
+
+  .carousel-info p {
+    font-size: 0.9rem;
+  }
 }
 
 /* Footer fijo */
@@ -301,5 +353,4 @@ h1 {
   z-index: 1000;
   box-sizing: border-box;
 }
-
 </style>
