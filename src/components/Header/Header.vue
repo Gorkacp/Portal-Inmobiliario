@@ -79,17 +79,24 @@
   font-size: 1.5rem;
 }
 
+@media (min-width: 1400px) {
+  .menu {
+    gap: 280px;
+  }
+}
+
+
 /* Tablet */
 @media (max-width: 1024px) {
   .menu {
-    gap: 60px;
+    gap: 120px;
   }
 }
 
 /* Móvil grande */
 @media (max-width: 768px) {
   .menu {
-    gap: 40px;
+    gap: 100px;
   }
 
   .menu i {
@@ -104,7 +111,7 @@
 /* Móvil pequeño */
 @media (max-width: 480px) {
   .menu {
-    gap: 20px;
+    gap: 80px;
   }
 
   .menu i {

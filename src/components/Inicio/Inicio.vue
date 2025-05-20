@@ -162,14 +162,21 @@ h1 {
   position: relative;
   overflow: hidden;
   max-width: 100vw;
+  padding: 0 30px; 
+  box-sizing: border-box; 
+  
 }
+
 
 .carousel {
   display: flex;
   transition: all 0.3s ease;
   overflow-x: hidden;
+  overflow-y: hidden;
   width: 100%;
+  height: 400px; 
 }
+
 
 .carousel-item {
   min-width: 100%;
@@ -228,7 +235,7 @@ h1 {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.952);
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -248,6 +255,7 @@ h1 {
   overflow-x: hidden;
   max-width: 100vw;
   box-sizing: border-box;
+  overflow-y: hidden;
 }
 
 .category {

@@ -32,9 +32,9 @@
       <router-link to="/contacto" class="boton-contacto">Contactar con el anunciante</router-link>
     </div>
 
-    <!-- Componente Header fijo en la parte inferior -->
-    <Header class="fixed-header" />
   </div>
+  <!-- Componente Header fijo en la parte inferior -->
+    <Header class="fixed-header" />
 </template>
 
 <script setup>
@@ -121,7 +121,7 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  overflow-x: auto;
+  overflow-x: hidden;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
