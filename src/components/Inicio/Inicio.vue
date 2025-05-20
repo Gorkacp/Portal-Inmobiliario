@@ -58,14 +58,12 @@ import Header from '../Header/Header.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-
 const products = ref([]);
 const rentProducts = ref([]);
 const saleProducts = ref([]);
 const loading = ref(true);
 const currentIndex = ref(0);
 
-// Cargar productos desde Firestore
 const fetchProducts = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, 'casas'));
@@ -84,7 +82,6 @@ const fetchProducts = async () => {
 onMounted(() => {
   fetchProducts();
 
-  // Auto avance del carrusel cada 4 segundos
   const interval = setInterval(() => {
     if (products.value.length > 0) {
       currentIndex.value = (currentIndex.value + 1) % products.value.length;
@@ -97,21 +94,15 @@ onMounted(() => {
 });
 
 const goToCategory = (category) => {
-  if (category === 'renta') {
-    router.push({ name: 'Alquiler' });
-  } else if (category === 'venta') {
-    router.push({ name: 'Venta' });
-  }
+  router.push({ name: category === 'renta' ? 'Alquiler' : 'Venta' });
 };
 
-// Nueva función para ir a la vista de la casa cuando se pulsa en la imagen del carrusel
 const goToProduct = (id) => {
   router.push({ name: 'VistaCasa', params: { id } });
 };
 </script>
 
 <style scoped>
-/* Reset básico para evitar márgenes y paddings extra */
 * {
   margin: 0;
   padding: 0;
@@ -119,7 +110,7 @@ const goToProduct = (id) => {
 }
 
 html, body {
-  overflow-x: hidden; /* Evita scroll horizontal global */
+  overflow-x: hidden;
   width: 100vw;
 }
 
@@ -127,7 +118,7 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-bottom: 60px; /* Igual que altura del header fijo */
+  padding-bottom: 60px;
   animation: fadeIn 0.6s ease;
 }
 
@@ -149,7 +140,7 @@ html, body {
 }
 
 h1 {
-  color: #000000;
+  color: #000;
   margin-bottom: 10px;
   font-weight: 700;
 }
@@ -157,43 +148,35 @@ h1 {
 /* Carrusel */
 .carousel-container {
   margin-top: 0;
-  display: flex;
-  justify-content: center;
   position: relative;
   overflow: hidden;
+  width: 100%;
   max-width: 100vw;
-  padding: 0 30px; 
-  box-sizing: border-box; 
-  
+  padding: 0 16px; /* Márgenes laterales restaurados */
+  box-sizing: border-box;
 }
-
 
 .carousel {
   display: flex;
   transition: all 0.3s ease;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden;
   width: 100%;
-  height: 400px; 
+  border-radius: 12px;
 }
-
 
 .carousel-item {
   min-width: 100%;
   flex-shrink: 0;
-  border-radius: 8px;
   position: relative;
-  animation: fadeIn 0.5s ease;
 }
 
 .carousel-item img {
   width: 100%;
   height: 400px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
-/* Info del carrusel (nombre y precio) */
 .carousel-info {
   position: absolute;
   bottom: 10px;
@@ -202,6 +185,7 @@ h1 {
   color: white;
   padding: 10px;
   border-radius: 5px;
+  max-width: 90%;
 }
 
 .carousel-info h3 {
@@ -214,34 +198,29 @@ h1 {
   margin: 0;
 }
 
-/* Eliminar botones prev/next */
-.carousel-prev,
-.carousel-next {
-  display: none;
-}
-
-/* Puntos indicadores del carrusel */
+/* Puntos indicadores */
 .carousel-dots {
   position: absolute;
-  bottom: 15px;
-  width: 100%;
+  bottom: 10px;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: center;
   gap: 10px;
-  z-index: 20;
+  z-index: 2;
 }
 
 .dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.952);
+  background-color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .dot.active {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: #fff;
 }
 
 /* Categorías */
@@ -252,10 +231,7 @@ h1 {
   gap: 20px;
   margin: 20px;
   flex-wrap: wrap;
-  overflow-x: hidden;
   max-width: 100vw;
-  box-sizing: border-box;
-  overflow-y: hidden;
 }
 
 .category {
@@ -267,7 +243,6 @@ h1 {
   background-color: #f9f9f9;
   border-radius: 10px;
   padding: 10px;
-  box-sizing: border-box;
 }
 
 .category:hover {
@@ -291,25 +266,8 @@ h1 {
   transform: scale(1.05);
 }
 
-/* Responsive para pantallas más pequeñas */
+/* Responsive */
 @media (max-width: 768px) {
-  .categories {
-    gap: 10px;
-  }
-
-  .category {
-    flex: 1 1 45%;
-    padding: 5px;
-  }
-
-  .category h2 {
-    font-size: 1.1rem;
-  }
-
-  .category img {
-    height: 180px;
-  }
-
   .carousel-item img {
     height: 250px;
   }
@@ -321,21 +279,17 @@ h1 {
   .carousel-info p {
     font-size: 1rem;
   }
-}
 
-@media (max-width: 480px) {
   .category {
-    flex: 1 1 48%;
-  }
-
-  .category h2 {
-    font-size: 1rem;
+    flex: 1 1 45%;
   }
 
   .category img {
-    height: 150px;
+    height: 180px;
   }
+}
 
+@media (max-width: 480px) {
   .carousel-item img {
     height: 200px;
   }
@@ -347,9 +301,17 @@ h1 {
   .carousel-info p {
     font-size: 0.9rem;
   }
+
+  .category {
+    flex: 1 1 100%;
+  }
+
+  .category img {
+    height: 150px;
+  }
 }
 
-/* Footer fijo */
+/* Header fijo */
 .fixed-header {
   position: fixed;
   bottom: 0;
@@ -359,6 +321,5 @@ h1 {
   text-align: center;
   padding: 10px 0;
   z-index: 1000;
-  box-sizing: border-box;
 }
 </style>
