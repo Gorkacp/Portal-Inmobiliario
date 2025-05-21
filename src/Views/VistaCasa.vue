@@ -1,22 +1,27 @@
+<!-- VistaCasa.vue -->
 <template>
   <div>
-    <!-- Galería de imágenes a ancho completo -->
+    <!-- GALERÍA DE IMÁGENES -->
     <div class="galeria-imagenes">
-      <!-- Recorremos el array de imágenes de la casa -->
+      <!-- Recorremos el array de imágenes que hay en el objeto casa -->
       <div v-for="(imagen, indice) in casa.imagenes" :key="indice" class="imagen-container">
-        <!-- Mostramos cada imagen con su ruta y un texto alternativo -->
+        <!-- Mostramos cada imagen en pantalla -->
         <img :src="imagen" :alt="`Imagen ${indice + 1}`" class="imagen-casa" />
       </div>
     </div>
 
-    <!-- Información de la casa con texto alineado a la izquierda -->
+    <!-- INFORMACIÓN DETALLADA DE LA CASA -->
     <section class="info-casa">
       <h2 class="titulo-info">{{ casa.nombre }} - {{ casa.precio }} €</h2>
       <p><i class="fas fa-map-marker-alt"></i> {{ casa.direccion }}</p>
+
       <p>
         <i class="fas fa-tag"></i> <strong>Estado:</strong> En venta
+        <!-- Si está en oferta, mostramos el descuento -->
         <span v-if="casa.enOferta === true"> - <strong>Descuento:</strong> {{ casa.descuento }} €</span>
       </p>
+
+      <!-- Más características -->
       <p><i class="fas fa-bed"></i> <strong>Habitaciones:</strong> {{ casa.habitaciones }}</p>
       <p><i class="fas fa-bath"></i> <strong>Baños:</strong> {{ casa.baños }}</p>
       <p><i class="fas fa-car"></i> <strong>Estacionamiento:</strong> {{ casa.estacionamiento }}</p>
@@ -24,85 +29,104 @@
       <p><i class="fas fa-home"></i> <strong>Tipo de propiedad:</strong> {{ casa.tipo }}</p>
     </section>
 
-    <!-- Contenedor del mapa a ancho completo -->
+    <!-- MAPA -->
     <div id="mapa" class="mapa"></div>
 
-    <!-- Botón para contactar al anunciante -->
+    <!-- BOTÓN DE CONTACTO -->
     <div class="contacto-boton-container">
+      <!-- Navega a la página de contacto -->
       <router-link to="/contacto" class="boton-contacto">Contactar con el anunciante</router-link>
     </div>
-
   </div>
-  <!-- Componente Header fijo en la parte inferior -->
-    <Header class="fixed-header" />
+
+  <!-- COMPONENTE HEADER FIJO -->
+  <Header class="fixed-header" />
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebase/firebase.js'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+// Importaciones de Vue
+import { onMounted, ref } from 'vue'               // ref: para crear variables reactivas; onMounted: se ejecuta al montar el componente
+import { useRoute } from 'vue-router'              // useRoute: para leer parámetros de la URL
+
+// Importaciones de Firebase
+import { doc, getDoc } from 'firebase/firestore'   // doc: referencia a documento; getDoc: obtiene el documento
+import { db } from '../firebase/firebase.js'       // configuración de tu proyecto Firebase
+
+// Importación de Leaflet
+import L from 'leaflet'                            // L: objeto principal de Leaflet
+import 'leaflet/dist/leaflet.css'                  // estilos necesarios de Leaflet
+
+// Importación de tu Header (no afecta al mapa)
 import Header from '../components/Header/Header.vue'
 
-// Usamos la ruta actual para obtener el parámetro 'id' de la casa
-const route = useRoute()
+// Leemos la ruta actual para obtener el parámetro "id"
+const rutaActual = useRoute()
 
-// Definimos una variable reactiva para almacenar los datos de la casa
-const casa = ref({ imagenes: [] })
+// Creamos una variable reactiva para guardar los datos de la casa
+const casa = ref({ imagenes: [], direccion: '' })
 
-// Cuando el componente se monta, hacemos la consulta a Firestore para obtener los datos de la casa
-onMounted(async () => {
-  const idCasa = route.params.id // Obtenemos el ID de la casa desde la URL
-  const referenciaDocumento = doc(db, 'casas', idCasa) // Referencia al documento Firestore
-  const documento = await getDoc(referenciaDocumento) // Obtenemos el documento
+// Al montar el componente, leemos los datos de Firebase
+onMounted(() => {
+  const idDeLaCasa = rutaActual.params.id
+  const referenciaALaCasa = doc(db, 'casas', idDeLaCasa)
 
-  if (documento.exists()) {
-    casa.value = documento.data() // Guardamos los datos de la casa en la variable reactiva
-
-    // Esperamos un poco para asegurar que el DOM esté actualizado y luego mostramos el mapa
-    setTimeout(() => {
-      mostrarMapa()
-    }, 200)
-  }
-})
-
-// Función para mostrar el mapa con la ubicación de la casa
-function mostrarMapa() {
-  // Si no hay dirección definida, no hacemos nada
-  if (!casa.value.direccion) return
-
-  // Inicializamos el mapa Leaflet en el div con id "mapa"
-  // Centramos inicialmente el mapa en unas coordenadas por defecto (Granada, España) y con zoom 13
-  const mapaLeaflet = L.map('mapa').setView([37.1773, -3.5986], 13)
-
-  // Añadimos las baldosas (tiles) del mapa usando OpenStreetMap
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(mapaLeaflet)
-
-  // Usamos la API de Nominatim de OpenStreetMap para geocodificar la dirección (convertir texto a coordenadas)
-  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(casa.value.direccion)}`)
-    .then(respuesta => respuesta.json()) // Convertimos la respuesta a JSON
-    .then(datos => {
-      // Si recibimos resultados de la búsqueda
-      if (datos.length > 0) {
-        const latitud = datos[0].lat // Latitud del primer resultado
-        const longitud = datos[0].lon // Longitud del primer resultado
-
-        // Cambiamos la vista del mapa a la ubicación encontrada con zoom 15
-        mapaLeaflet.setView([latitud, longitud], 15)
-
-        // Añadimos un marcador en la posición encontrada
-        L.marker([latitud, longitud]).addTo(mapaLeaflet)
+  getDoc(referenciaALaCasa)
+    .then((resultado) => {
+      if (resultado.exists()) {
+        casa.value = resultado.data()
+        // Damos un pequeño retraso para que el DIV del mapa exista en el DOM
+        setTimeout(mostrarMapa, 200)
       }
     })
-    .catch(error => {
-      console.error('Error al obtener la ubicación:', error)
+    .catch((error) => {
+      console.error('Error al cargar los datos de la casa:', error)
+    })
+})
+
+// Función para crear el mapa y centrarlo en la dirección de la casa
+function mostrarMapa() {
+  // Si no hay dirección, no hacemos nada
+  if (!casa.value.direccion) {
+    return
+  }
+
+  // Creamos el mapa sin centrarlo en coordenadas por defecto
+  const mapa = L.map('mapa')
+
+  // Cargamos las baldosas de OpenStreetMap para crear eñ mapa
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(mapa)
+
+  // Llamada a la API de Nominatim para convertir dirección en coordenadas
+  const direccionCodificada = encodeURIComponent(casa.value.direccion)
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${direccionCodificada}`)
+    .then((respuesta) => respuesta.json())
+    .then((listaDeResultados) => {
+      if (listaDeResultados.length === 0) {
+        console.warn('No se encontraron coordenadas para esta dirección.')
+        return
+      }
+      // Tomamos la primera coincidencia
+      const resultado = listaDeResultados[0]
+      const latitud = parseFloat(resultado.lat)
+      const longitud = parseFloat(resultado.lon)
+
+      // Centramos el mapa en la dirección y ponemos un marcador
+      mapa.setView([latitud, longitud], 15)
+      L.marker([latitud, longitud]).addTo(mapa)
+    })
+    .catch((error) => {
+      console.error('Error al convertir dirección en coordenadas:', error)
     })
 }
 </script>
+
+
+
+
+
+
 
 <style>
 /* Estilos globales */

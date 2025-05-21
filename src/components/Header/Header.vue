@@ -3,19 +3,19 @@
     <nav>
       <ul class="menu">
         <li>
-          <router-link to="/" class="menu-item" :class="{ active: $route.path === '/' }">
+          <router-link to="/" class="menu-item" :class="{ active: $route.path === '/' }"> <!-- para la ruta de inicio -->
             <i class="fas fa-home"></i>
             <span>Inicio</span>
           </router-link>
         </li>
         <li>
-          <router-link to="/ofertas" class="menu-item" :class="{ active: $route.path === '/ofertas' }">
+          <router-link to="/ofertas" class="menu-item" :class="{ active: $route.path === '/ofertas' }"> <!-- para la ruta de ofertas -->
             <i class="fas fa-briefcase"></i>
             <span>Ofertas</span>
           </router-link>
         </li>
         <li>
-          <router-link to="/perfil" class="menu-item" :class="{ active: $route.path === '/perfil' }">
+          <router-link to="/perfil" class="menu-item" :class="{ active: $route.path === '/perfil' }"> <!-- para la ruta de perfil -->
             <i class="fas fa-user"></i>
             <span>Perfil</span>
           </router-link>
@@ -27,6 +27,11 @@
 
 <script setup>
 </script>
+
+
+
+
+
 
 <style scoped>
 .header {

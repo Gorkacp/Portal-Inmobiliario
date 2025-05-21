@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <!-- GIF de carga -->
-    <div v-if="loading" class="loader-overlay">
+    <div v-if="cargando" class="loader-overlay">
       <img src="/loading.gif" alt="Cargando..." class="loader-gif" />
     </div>
 
@@ -9,9 +9,9 @@
       <h1>Casas en Oferta</h1>
 
       <!-- Listado de casas en oferta -->
-      <div v-if="casasEnOferta.length > 0" class="lista-ofertas">
+      <div v-if="listaCasasOferta.length > 0" class="lista-ofertas">
         <router-link
-          v-for="casa in casasEnOferta"
+          v-for="casa in listaCasasOferta"
           :key="casa.id"
           :to="`/vista-casa/${casa.id}`"
           class="tarjeta-casa"
@@ -35,9 +35,8 @@
         <p>No hay casas en oferta por el momento.</p>
       </div>
     </main>
-
-    <Header class="fixed-header" />
   </div>
+  <Header class="fixed-header" />
 </template>
 
 <script setup>
@@ -45,35 +44,56 @@ import { onMounted, ref } from 'vue'
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore'
 import Header from '../Header/Header.vue'
 
-const loading = ref(true)
-const casasEnOferta = ref([])
+// Variables en español
+const cargando = ref(true)
+const listaCasasOferta = ref([])
 
-const db = getFirestore()
+const baseDatos = getFirestore()
 
+// El hook onMounted se ejecuta justo después de que el componente se monte en la página
 onMounted(() => {
-  setTimeout(() => {
-    loading.value = false
-    cargarCasasEnOferta()
-  }, 1500)
+  obtenerCasasEnOferta() // Llamamos directamente a la función sin simular tiempos
 })
 
-async function cargarCasasEnOferta() {
-  const casasRef = collection(db, 'casas')
-  const q = query(casasRef, where('enOferta', '==', true))
+// Función para obtener casas que están en oferta
+function obtenerCasasEnOferta() {
+  // Creamos una referencia a la colección 'casas' en la base de datos
+  const referenciaCasas = collection(baseDatos, 'casas')
 
-  try {
-    const querySnapshot = await getDocs(q)
-    casasEnOferta.value = []
-    querySnapshot.forEach((doc) => {
-      const casa = doc.data()
-      casa.id = doc.id
-      casasEnOferta.value.push(casa)
+  // Creamos una consulta para filtrar las casas que tienen el campo 'enOferta' igual a true
+  const consulta = query(referenciaCasas, where('enOferta', '==', true))
+
+  // Ejecutamos la consulta para obtener los documentos que cumplen la condición
+  getDocs(consulta)
+    .then((resultadoConsulta) => { // Si la conexion con la bd es exitosa se procede
+      // Limpiamos la lista de casas en oferta antes de llenarla con los nuevos resultados
+      listaCasasOferta.value = []
+      // Recorremos cada documento obtenido en la consulta
+      resultadoConsulta.forEach((documento) => { //Recorremos el array
+        // Obtenemos los datos de la casa del documento
+        const casa = documento.data()
+
+        // Agregamos el id del documento a los datos de la casa para identificarla
+        casa.id = documento.id
+
+        // Añadimos la casa a la lista de casas en oferta
+        listaCasasOferta.value.push(casa)
+      })
     })
-  } catch (error) {
-    console.error('Error al cargar las casas en oferta:', error)
-  }
+    // Capturamos cualquier error que ocurra al obtener las casas y lo mostramos en consola
+    .catch((error) => {
+      console.error('Error al obtener casas en oferta:', error)
+    })
+    .finally(() => {
+      cargando.value = false // Se indica que la carga ha terminado (se oculta el loader) solo cuando termina la consulta real
+    })
 }
 </script>
+
+
+
+
+
 
 <style scoped>
 .page-container {

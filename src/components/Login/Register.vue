@@ -65,76 +65,81 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue';
-  import { useRouter } from 'vue-router';
-  
-  import { auth, db } from '../../firebase/firebase';
-  import {
-    createUserWithEmailAndPassword,
-    GoogleAuthProvider,
-    signInWithPopup,
-    updateProfile
-  } from 'firebase/auth';
-  import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-  
-  import Header from '../Header/Header.vue';
-  
-  const nombre = ref('');
-  const correo = ref('');
-  const contrasena = ref('');
-  const mostrarContrasena = ref(false);
-  const errorMessage = ref('');
-  const router = useRouter();
-  
-  async function registrarUsuario() {
-    errorMessage.value = '';
-    try {
-      const { user } = await createUserWithEmailAndPassword(auth, correo.value, contrasena.value);
-      await updateProfile(user, { displayName: nombre.value });
-      await addDoc(collection(db, 'users'), {
-        uid: user.uid,
-        nombre: nombre.value,
-        email: correo.value,
-        createdAt: serverTimestamp()
-      });
-      router.push('/perfil');
-    } catch (error) {
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+import { auth, db } from '../../firebase/firebase';
+import {createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import Encabezado from '../Header/Header.vue';
+
+const nombre = ref('');
+const correo = ref('');
+const contrasena = ref('');
+const mostrarContrasena = ref(false);
+const mensajeError = ref('');
+const enrutador = useRouter();
+
+function registrarUsuario() {
+  mensajeError.value = '';
+  createUserWithEmailAndPassword(auth, correo.value, contrasena.value)
+    .then((resultado) => {
+      const usuario = resultado.user;
+      return updateProfile(usuario, { displayName: nombre.value })
+        .then(() => {
+          return addDoc(collection(db, 'users'), {
+            uid: usuario.uid,
+            nombre: nombre.value,
+            email: correo.value,
+            createdAt: serverTimestamp()
+          });
+        })
+        .then(() => {
+          enrutador.push('/perfil');
+        });
+    })
+    .catch((error) => {
       console.error('Error al registrar:', error.message);
-      errorMessage.value = formatearError(error.code);
-    }
-  }
-  
-  async function registrarConGoogle() {
-    errorMessage.value = '';
-    try {
-      const provider = new GoogleAuthProvider();
-      const { user } = await signInWithPopup(auth, provider);
-      await addDoc(collection(db, 'users'), {
-        uid: user.uid,
-        nombre: user.displayName || '',
-        email: user.email,
+      mensajeError.value = traducirError(error.code);
+    });
+}
+
+function registrarConGoogle() {
+  mensajeError.value = '';
+  const proveedor = new GoogleAuthProvider();
+  signInWithPopup(auth, proveedor)
+    .then((resultado) => {
+      const usuario = resultado.user;
+      return addDoc(collection(db, 'users'), {
+        uid: usuario.uid,
+        nombre: usuario.displayName || '',
+        email: usuario.email,
         createdAt: serverTimestamp()
       });
-      router.push('/perfil');
-    } catch (error) {
+    })
+    .then(() => {
+      enrutador.push('/perfil');
+    })
+    .catch((error) => {
       console.error('Error Google signup:', error.message);
-      errorMessage.value = 'No se pudo registrar con Google.';
-    }
+      mensajeError.value = 'No se pudo registrar con Google.';
+    });
+}
+
+function traducirError(codigo) {
+  switch (codigo) {
+    case 'auth/email-already-in-use':
+      return 'El correo ya está en uso.';
+    case 'auth/invalid-email':
+      return 'El correo no es válido.';
+    case 'auth/weak-password':
+      return 'La contraseña debe tener al menos 6 caracteres.';
+    default:
+      return 'Error al registrar. Intenta nuevamente.';
   }
-  
-  function formatearError(code) {
-    switch (code) {
-      case 'auth/email-already-in-use':
-        return 'El correo ya está en uso.';
-      case 'auth/invalid-email':
-        return 'El correo no es válido.';
-      case 'auth/weak-password':
-        return 'La contraseña debe tener al menos 6 caracteres.';
-      default:
-        return 'Error al registrar. Intenta nuevamente.';
-    }
-  }
-  </script>
+}
+</script>
+
   
   <style scoped>
   /* Estilo base para la página de login */

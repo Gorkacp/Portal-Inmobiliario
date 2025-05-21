@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isLoggedIn" class="pagina-perfil">
+  <div v-if="estaLogueado" class="pagina-perfil">
     <button @click="cerrarSesion" class="boton-logout">Cerrar sesión</button>
 
     <h1>Mi Perfil</h1>
@@ -30,7 +30,6 @@
         <i class="fas fa-arrow-right icono-flecha"></i>
       </div>
 
-      <!-- Mis Publicaciones -->
       <div class="seccion-publicaciones" v-if="misPublicaciones.length > 0">
         <h2>Mis publicaciones</h2>
         <div
@@ -57,7 +56,6 @@
             </div>
           </div>
 
-          <!-- Botones para editar y eliminar, con @click.stop para evitar la navegación -->
           <div class="botones-publicacion" @click.stop>
             <button @click="irAEditar(publicacion.id)">Editar</button>
             <button @click="eliminarPublicacion(publicacion.id)">Eliminar</button>
@@ -97,7 +95,7 @@ import {
 import Header from '../Header/Header.vue';
 
 const usuario = ref(null);
-const isLoggedIn = ref(false);
+const estaLogueado = ref(false);
 const modoEdicion = ref(false);
 const nuevoNombre = ref('');
 const nuevoEmail = ref('');
@@ -108,39 +106,66 @@ const db = getFirestore();
 
 function cerrarSesion() {
   signOut(auth)
-    .then(() => router.push('/login'))
-    .catch((error) => console.error('Error al cerrar sesión:', error));
+    .then(() => {
+      router.push('/login');
+    })
+    .catch((error) => {
+      console.error('Error al cerrar sesión:', error);
+    });
 }
 
 function irAPublicar() {
   router.push('/publicar');
 }
 
-async function guardarCambios() {
-  try {
-    if (auth.currentUser) {
-      await updateProfile(auth.currentUser, { displayName: nuevoNombre.value });
-      if (nuevoEmail.value !== auth.currentUser.email) {
-        await updateEmail(auth.currentUser, nuevoEmail.value);
-      }
-      modoEdicion.value = false;
-      verificarSesion();
-    }
-  } catch (error) {
-    console.error('Error al guardar cambios:', error);
+function guardarCambios() {
+  // Verificamos si hay un usuario autenticado actualmente
+  if (auth.currentUser) {
+    // Actualizamos el nombredel usuario actual
+    updateProfile(auth.currentUser, { displayName: nuevoNombre.value })
+      .then(() => { // Si la conexion con la bd es exitosa se procede
+        // Si el nuevo email es diferente al que tiene el usuario actual, actualizamos el email
+        if (nuevoEmail.value !== auth.currentUser.email) {
+          // Retornamos la promesa de updateEmail para que se encadene en la siguiente then()
+          return updateEmail(auth.currentUser, nuevoEmail.value);
+        }
+      })
+      .then(() => { // Si la conexion con la bd es exitosa se procede
+        // Cuando las actualizaciones hayan terminado, desactivamos el modo edición
+        modoEdicion.value = false;
+        // Volvemos a verificar la sesión para refrescar los datos del usuario
+        verificarSesion();
+      })
+      .catch((error) => {
+        console.error('Error al guardar cambios:', error);
+      });
   }
 }
 
+
 function cargarPublicacionesUsuario(uid) {
+  // Creamos una referencia a la colección "casas" en la base de datos Firestore
   const publicacionesRef = collection(db, 'casas');
+  
+  // Creamos una consulta para filtrar solo las publicaciones donde
+  // el campo 'usuarioID' sea igual al 'uid' que recibe la función
   const consulta = query(publicacionesRef, where('usuarioID', '==', uid));
 
+  // Ejecutamos la consulta para obtener los documentos que coincidan
   getDocs(consulta)
-    .then((resultado) => {
+    .then((resultado) => { // Si la conexion con la bd es exitosa se procede
+      // Cuando tenemos el resultado, limpiamos el array 'misPublicaciones'
       misPublicaciones.value = [];
+      
+      // Recorremos cada documento que nos devolvió la consulta
       resultado.forEach((docu) => {
+        // Obtenemos los datos del documento (la información de la publicación)
         const publicacion = docu.data();
+        
+        // Añadimos al objeto 'publicacion' una propiedad 'id' con el id del documento
         publicacion.id = docu.id;
+        
+        // Añadimos la publicación al array reactivo 'misPublicaciones'
         misPublicaciones.value.push(publicacion);
       });
     })
@@ -149,21 +174,28 @@ function cargarPublicacionesUsuario(uid) {
     });
 }
 
-function irAEditar(publicacionId) {
-  router.push({ name: 'Publicar', params: { id: publicacionId } });
+
+function irAEditar(idPublicacion) {
+  router.push({ name: 'Publicar', params: { id: idPublicacion } });
 }
 
-async function eliminarPublicacion(publicacionId) {
-  try {
-    const publicacionRef = doc(db, 'casas', publicacionId);
-    await deleteDoc(publicacionRef);
-    cargarPublicacionesUsuario(usuario.value.uid);
-  } catch (error) {
-    console.error('Error al eliminar publicación:', error);
-  }
+function eliminarPublicacion(idPublicacion) {
+  const publicacionRef = doc(db, 'casas', idPublicacion);
+
+  // Usamos la función deleteDoc para eliminar ese documento de Firestore
+  deleteDoc(publicacionRef)
+    .then(() => { // Si la conexion con la bd es exitosa se procede
+      // Si la eliminación fue exitosa, recargamos las publicaciones del usuario
+      // para actualizar la vista y mostrar que se ha eliminado la publicación
+      cargarPublicacionesUsuario(usuario.value.uid);
+    })
+    .catch((error) => {
+      // Si hubo un error al intentar eliminar el documento, lo mostramos por consola
+      console.error('Error al eliminar publicación:', error);
+    });
 }
 
-// Navega a la vista individual de la casa usando el nombre exacto "VistaCasa"
+
 function irAVistaCasa(id) {
   router.push({ name: 'VistaCasa', params: { id } });
 }
@@ -172,12 +204,12 @@ function verificarSesion() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       usuario.value = user;
-      isLoggedIn.value = true;
+      estaLogueado.value = true;
       nuevoNombre.value = user.displayName || '';
       nuevoEmail.value = user.email || '';
       cargarPublicacionesUsuario(user.uid);
     } else {
-      isLoggedIn.value = false;
+      estaLogueado.value = false;
       router.push('/login');
     }
   });

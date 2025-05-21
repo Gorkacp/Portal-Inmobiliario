@@ -9,7 +9,7 @@
       <input type="email" v-model="email" required />
 
       <label for="mensaje">Mensaje:</label>
-      <textarea v-model="mensaje" rows="5" required></textarea>
+      <textarea v-model="mensaje" rows="5" required></textarea><!-- v-model Para actualizar el formulario -->
 
       <button type="submit">Enviar</button>
     </form>
@@ -25,16 +25,11 @@ import Header from '../Header/Header.vue';
 
 const router = useRouter()
 
-const nombre = ref('')
+const nombre = ref('') // Son variables reactivas para que pueda enlazar el input de v-model con una variable reactiva
 const email = ref('')
 const mensaje = ref('')
 
 function enviarEmail() {
-  // Aquí podrías enviar los datos a un backend si lo tuvieras
-  console.log('Nombre:', nombre.value)
-  console.log('Email:', email.value)
-  console.log('Mensaje:', mensaje.value)
-
   // Redireccionar al inicio
   router.push('/')
 }

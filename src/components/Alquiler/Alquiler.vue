@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <!-- GIF de carga -->
-    <div v-if="loading" class="loader-overlay">
+    <div v-if="cargando" class="loader-overlay">
       <img src="/loading.gif" alt="Cargando..." class="loader-gif" />
     </div>
 
@@ -24,7 +24,7 @@
             <p class="nombre-casa">{{ casa.nombre }}</p>
             <p class="ubicacion"><i class="fas fa-map-marker-alt"></i> {{ casa.direccion }}</p>
             <p class="habitaciones"><i class="fas fa-bed"></i> {{ casa.habitaciones }} Habitaciones</p>
-            <p class="banos"><i class="fas fa-bath"></i> {{ casa.banos }} Baños</p>
+            <p class="banos"><i class="fas fa-bath"></i> {{ casa.baños }} Baños</p>
             <p class="precio">{{ casa.precio }} €</p>
           </div>
         </router-link>
@@ -41,39 +41,63 @@
 </template>
 
 <script setup>
+// Importamos funciones reactivas y el ciclo de vida 'onMounted' de Vue
 import { onMounted, ref } from 'vue'
+// Importamos  para interactuar con la base de datos
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore'
 import Header from '../Header/Header.vue'
 
-const loading = ref(true)
-const casasEnAlquiler = ref([])
+const cargando = ref(true) // Creamos una variable reactiva para indicar si la página está cargando datos (inicialmente true)
 
-const db = getFirestore()
+const casasEnAlquiler = ref([]) // Creamos una variable reactiva para almacenar la lista de casas en alquiler (inicialmente vacía)
 
+const baseDatos = getFirestore() // Obtenemos la instancia de Firestore para poder hacer consultas
+
+// El hook onMounted se ejecuta justo después de que el componente se monte en la página
 onMounted(() => {
-  setTimeout(() => {
-    loading.value = false
-    cargarCasasEnAlquiler()
-  }, 1500)
+  // Llamamos directamente a la función que carga las casas
+  cargarCasasEnAlquiler()
 })
 
-async function cargarCasasEnAlquiler() {
-  const casasRef = collection(db, 'casas')
-  const q = query(casasRef, where('tipo', '==', 'Alquiler')) // Filtrado por alquiler
+// Función que carga las casas en alquiler desde Firestore
+function cargarCasasEnAlquiler() {
+  // Coleccion casas
+  const referenciaCasas = collection(baseDatos, 'casas')
 
-  try {
-    const querySnapshot = await getDocs(q)
-    casasEnAlquiler.value = []
-    querySnapshot.forEach((doc) => {
-      const casa = doc.data()
-      casa.id = doc.id
-      casasEnAlquiler.value.push(casa)
+  const consulta = query(referenciaCasas, where('tipo', '==', 'Alquiler')) // Creamos una consulta para filtrar 
+
+  // Ejecutamos la consulta para obtener los documentos que cumplen la condición
+  getDocs(consulta)
+    .then(resultadoConsulta => {
+      // Antes de llenar el array, lo vaciamos para evitar duplicados
+      casasEnAlquiler.value = []
+
+      // Recorremos cada documento que viene de la consulta
+      resultadoConsulta.forEach(doc => {
+        // Obtenemos los datos del documento en un objeto
+        const casa = doc.data()
+
+        // Añadimos el id del documento para poder identificar la casa luego
+        casa.id = doc.id
+
+        // Añadimos la casa al array reactivo para mostrarla en la interfaz
+        casasEnAlquiler.value.push(casa)
+      })
+
+      // Se indica que la carga ha terminado (se oculta el loader) solo cuando ya se cargaron las casas
+      cargando.value = false
     })
-  } catch (error) {
-    console.error('Error al cargar las casas en alquiler:', error)
-  }
+    .catch(error => {
+      // Si ocurre un error al hacer la consulta, lo mostramos por consola
+      console.error('Error al cargar las casas en alquiler:', error)
+      // Aunque haya error, ocultamos el loader para no quedarnos atrapados
+      cargando.value = false
+    })
 }
 </script>
+
+
+
 
 <style scoped>
 .page-container {

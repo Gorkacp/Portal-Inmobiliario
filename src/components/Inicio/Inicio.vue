@@ -9,16 +9,16 @@
       <div class="carousel" ref="carousel">
         <div
           class="carousel-item"
-          v-for="(product, index) in products"
-          :key="product.id"
-          v-show="currentIndex === index"
-          @click="goToProduct(product.id)"
+          v-for="(producto, indice) in productos"
+          :key="producto.id"
+          v-show="indiceActual === indice"
+          @click="irAProducto(producto.id)"
           style="cursor: pointer;"
         >
-          <img :src="product.imagenes[0]" :alt="product.nombre" />
+          <img :src="producto.imagenes[0]" :alt="producto.nombre" />
           <div class="carousel-info">
-            <h3>{{ product.nombre }}</h3>
-            <p>Precio: {{ product.precio }} €</p>
+            <h3>{{ producto.nombre }}</h3>
+            <p>Precio: {{ producto.precio }} €</p>
           </div>
         </div>
       </div>
@@ -26,22 +26,22 @@
       <!-- Puntos indicadores -->
       <div class="carousel-dots">
         <span
-          v-for="(product, index) in products"
-          :key="index"
+          v-for="(producto, indice) in productos"
+          :key="indice"
           class="dot"
-          :class="{ active: currentIndex === index }"
-          @click="currentIndex = index"
+          :class="{ active: indiceActual === indice }"
+          @click="indiceActual = indice"
         ></span>
       </div>
     </div>
 
     <!-- Categorías -->
     <div class="categories">
-      <div class="category" @click="goToCategory('renta')">
+      <div class="category" @click="irACategoria('renta')">
         <h2>Casas en Alquiler</h2>
         <img src="/2.webp" alt="Casas en Renta" />
       </div>
-      <div class="category" @click="goToCategory('venta')">
+      <div class="category" @click="irACategoria('venta')">
         <h2>Casas en Venta</h2>
         <img src="/1.webp" alt="Casas en Venta" />
       </div>
@@ -58,47 +58,59 @@ import Header from '../Header/Header.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const products = ref([]);
-const rentProducts = ref([]);
-const saleProducts = ref([]);
-const loading = ref(true);
-const currentIndex = ref(0);
+const productos = ref([]);
+const productosRenta = ref([]);
+const productosVenta = ref([]);
+const cargando = ref(true);
+const indiceActual = ref(0);
 
-const fetchProducts = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(db, 'casas'));
-    const fetchedProducts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+function obtenerProductos() {
+  getDocs(collection(db, 'casas'))
+    .then((querySnapshot) => { // Si la conexion con la bd es exitosa se procede
+      // Ejecuta una consulta para obtener todos los documentos de la colección 'casas' en Firestore.
+      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Recorre cada documento de la consulta con .map y crea un nuevo array 'productosObtenidos'
+      // donde cada elemento es un objeto que tiene el 'id' del documento y todos sus datos.
 
-    rentProducts.value = fetchedProducts.filter((product) => product.tipo === 'Renta');
-    saleProducts.value = fetchedProducts.filter((product) => product.tipo === 'Venta');
-    products.value = fetchedProducts;
-  } catch (error) {
-    console.error('Error al cargar los productos:', error);
-  } finally {
-    loading.value = false;
-  }
-};
+      productosRenta.value = productosObtenidos.filter(producto => producto.tipo === 'Renta');
+      // Filtra los productos para quedarse sólo con los que tienen tipo 'Renta' y los guarda en 'productosRenta'.
 
-onMounted(() => {
-  fetchProducts();
+      productosVenta.value = productosObtenidos.filter(producto => producto.tipo === 'Venta');
+      // Filtra los productos para quedarse sólo con los que tienen tipo 'Venta' y los guarda en 'productosVenta'.
 
-  const interval = setInterval(() => {
-    if (products.value.length > 0) {
-      currentIndex.value = (currentIndex.value + 1) % products.value.length;
+      productos.value = productosObtenidos;
+      // Guarda todos los productos (sin filtrar) en 'productos'.
+    })
+    .catch(error => {
+      // Si ocurre un error al obtener los datos, lo muestra en la consola.
+      console.error('Error al cargar los productos:', error);
+    })
+    .finally(() => {
+      // Finalmente, si hubo éxito o error, cambia el estado 'cargando' a falso,
+      cargando.value = false;
+    });
+}
+
+onMounted(() => { // El componente se monta y se carga en la página
+  obtenerProductos();
+
+  const intervalo = setInterval(() => {
+    if (productos.value.length > 0) {
+      indiceActual.value = (indiceActual.value + 1) % productos.value.length; //Incrementa en 1 para pasar a la sigguiente img
     }
-  }, 4000);
+  }, 4000); // Cada 4 segundos cambiaríamos de imagen en nuestro carrusel
 
-  onUnmounted(() => {
-    clearInterval(interval);
+  onUnmounted(() => { // Limpia el intervalo para que no siga corriendo en segundo plano cuando el componente ya no esté
+    clearInterval(intervalo);
   });
 });
 
-const goToCategory = (category) => {
-  router.push({ name: category === 'renta' ? 'Alquiler' : 'Venta' });
+const irACategoria = (categoria) => {
+  router.push({ name: categoria === 'renta' ? 'Alquiler' : 'Venta' }); // Para navegar mediante el router a las categorías de venta o alquiler
 };
 
-const goToProduct = (id) => {
-  router.push({ name: 'VistaCasa', params: { id } });
+const irAProducto = (id) => {
+  router.push({ name: 'VistaCasa', params: { id } }); // Para navegar a la vista de la casa mediante el carrusel según el id de la publicación
 };
 </script>
 

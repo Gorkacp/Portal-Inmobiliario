@@ -67,43 +67,45 @@
 <script setup>
 import { ref } from 'vue';
 import { auth } from '../../firebase/firebase';
-import {
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'vue-router';
 import Header from '../Header/Header.vue';
 
+// Variables reactivas 
 const correo = ref('');
 const contrasena = ref('');
 const mostrarContrasena = ref(false);
 const error = ref('');
-const router = useRouter();
+const enrutador = useRouter();
 
-async function iniciarSesionConCorreo() {
+// Función para iniciar sesión con correo y contraseña
+function iniciarSesionConCorreo() {
   error.value = '';
-  try {
-    await signInWithEmailAndPassword(auth, correo.value, contrasena.value);
-    router.push('/perfil');
-  } catch (e) {
-    console.error(e);
-    error.value = 'Correo o contraseña incorrectos.';
-  }
+  signInWithEmailAndPassword(auth, correo.value, contrasena.value)
+    .then(() => {
+      enrutador.push('/perfil'); // Una vez la Sesion iniciada te lleve al perfil
+    })
+    .catch((e) => {
+      console.error(e);
+      error.value = 'Correo o contraseña incorrectos.';
+    });
 }
 
-async function iniciarSesionConGoogle() {
+// Función para iniciar sesión con Google
+function iniciarSesionConGoogle() {
   error.value = '';
-  const provider = new GoogleAuthProvider();
-  try {
-    await signInWithPopup(auth, provider);
-    router.push('/perfil');
-  } catch (e) {
-    console.error(e);
-    error.value = 'No se pudo iniciar sesión con Google.';
-  }
+  const proveedor = new GoogleAuthProvider();
+  signInWithPopup(auth, proveedor)
+    .then(() => {
+      enrutador.push('/perfil'); // Una vez la Sesion iniciada te lleve al perfil
+    })
+    .catch((e) => {
+      console.error(e);
+      error.value = 'No se pudo iniciar sesión con Google.';
+    });
 }
 </script>
+
 
 <style scoped>
 /* Diseño general */

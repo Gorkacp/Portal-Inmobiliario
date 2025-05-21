@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router'; // Api para que se puedan ver mejor las url sin #
 import Inicio from './components/Inicio/Inicio.vue';
 import Login from './components/Login/Login.vue';
 import Offers from './components/Ofertas/Ofertas.vue';
@@ -25,10 +25,10 @@ const routes = [
   { path: '/contacto', name: 'Contacto', component: Contacto},
 ];
 
-
+// Crea el enrutador utilizando historial HTML5 (sin hash # en la URL)
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-export default router;
+export default router; //Se exporta para que pueda ser usado por main.js

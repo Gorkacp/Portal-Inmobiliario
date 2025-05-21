@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <!-- GIF de carga -->
-    <div v-if="loading" class="loader-overlay">
+    <div v-if="cargando" class="loader-overlay">
       <img src="/loading.gif" alt="Cargando..." class="loader-gif" />
     </div>
 
@@ -24,7 +24,7 @@
             <p class="nombre-casa">{{ casa.nombre }}</p>
             <p class="ubicacion"><i class="fas fa-map-marker-alt"></i> {{ casa.direccion }}</p>
             <p class="habitaciones"><i class="fas fa-bed"></i> {{ casa.habitaciones }} Habitaciones</p>
-            <p class="banos"><i class="fas fa-bath"></i> {{ casa.banos }} Baños</p>
+            <p class="banos"><i class="fas fa-bath"></i> {{ casa.baños }} Baños</p>
             <p class="precio">{{ casa.precio }} €</p>
           </div>
         </router-link>
@@ -35,9 +35,8 @@
         <p>No hay casas en venta por el momento.</p>
       </div>
     </main>
-
-    <Header class="fixed-header" />
   </div>
+  <Header class="fixed-header" />
 </template>
 
 <script setup>
@@ -45,35 +44,55 @@ import { onMounted, ref } from 'vue'
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore'
 import Header from '../Header/Header.vue'
 
-const loading = ref(true)
+// Variable reactiva para mostrar el loader
+const cargando = ref(true)
+
+// Variable reactiva para almacenar las casas en venta
 const casasEnVenta = ref([])
 
-const db = getFirestore()
+// Obtener la instancia de Firestore
+const baseDatos = getFirestore()
 
+// El hook onMounted se ejecuta justo después de que el componente se monte en la página
 onMounted(() => {
-  setTimeout(() => {
-    loading.value = false
-    cargarCasasEnVenta()
-  }, 1500)
+  // Llamamos a la función que carga las casas en venta
+  cargarCasasEnVenta()
 })
 
-async function cargarCasasEnVenta() {
-  const casasRef = collection(db, 'casas')
-  const q = query(casasRef, where('tipo', '==', 'Venta')) 
+// Función para cargar las casas 
+function cargarCasasEnVenta() {
+  // Referencia a la colección 'casas'
+  const referenciaCasas = collection(baseDatos, 'casas')
 
-  try {
-    const querySnapshot = await getDocs(q)
-    casasEnVenta.value = []
-    querySnapshot.forEach((doc) => {
-      const casa = doc.data()
-      casa.id = doc.id
-      casasEnVenta.value.push(casa)
+  // Consulta para filtrar solo casas de tipo venta
+  const consulta = query(referenciaCasas, where('tipo', '==', 'Venta'))
+
+  // Ejecutar la consulta y obtener los documentos
+  getDocs(consulta)
+    .then(resultadoConsulta => { // Si la conexion con la bd es exitosa se procede
+      // Vaciar el array antes de llenarlo
+      casasEnVenta.value = []
+
+      // Recorrer cada documento del resultado
+      resultadoConsulta.forEach(doc => {
+        const casa = doc.data() // Obtener los datos del documento
+        casa.id = doc.id        // Agregar el id del documento
+        casasEnVenta.value.push(casa) // Añadir al array reactivo
+      })
+
+      // Se indica que la carga ha terminado (se oculta el loader)
+      cargando.value = false
     })
-  } catch (error) {
-    console.error('Error al cargar las casas en venta:', error)
-  }
+    .catch(error => {
+      console.error('Error al cargar las casas en venta:', error)
+      // También ocultamos el loader para que no quede bloqueado en carga
+      cargando.value = false
+    })
 }
 </script>
+
+
+
 
 <style scoped>
 .page-container {
