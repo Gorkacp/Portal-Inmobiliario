@@ -1,7 +1,6 @@
 <template>
   <div class="contenedor">
     <!-- Botón de volver -->
-    <!-- Botón de volver con icono -->
     <button class="btn-volver" @click="volverPerfil">
       <i class="fas fa-arrow-left icono-flecha"></i> Volver
     </button>
@@ -113,26 +112,42 @@ const form = ref({
 // Imágenes en base64
 const imagenes = ref([])
 
+
+// Hook que se ejecuta automáticamente cuando el componente se ha montado en pantalla.
 onMounted(() => {
+  // Se establece un observador que detecta cambios en el estado de autenticación del usuario.
   onAuthStateChanged(auth, (user) => {
+    // Si el usuario ha iniciado sesión, se guarda en la variable reactiva 'usuario'.
     if (user) {
       usuario.value = user
     }
   })
 })
 
+
 function seleccionarImagenes(evento) {
+  // Convierte la lista de archivos seleccionados en un array y limita la cantidad a un máximo de 6 archivos
   const archivos = Array.from(evento.target.files).slice(0, 6)
+  
+  // Limpia el array reactivo donde se almacenan las imágenes en base64 para evitar acumular imágenes previas
   imagenes.value = []
 
+  // Recorre cada archivo seleccionado
   archivos.forEach((archivo) => {
+    // Crea un nuevo objeto FileReader para leer el contenido del archivo
     const lector = new FileReader()
+
+    // Cuando se complete la lectura del archivo, el resultado estará en formato base64
     lector.onload = (e) => {
+      // Añade el resultado (la imagen codificada en base64) al array reactivo de imágenes
       imagenes.value.push(e.target.result)
     }
+
+    // Inicia la lectura del archivo como una URL de datos base64
     lector.readAsDataURL(archivo)
   })
 }
+
 
 function crearPublicacion() {
   if (!usuario.value) return

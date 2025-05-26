@@ -65,46 +65,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { auth } from '../../firebase/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { useRouter } from 'vue-router';
-import Header from '../Header/Header.vue';
+// Importaciones necesarias
+import { ref } from 'vue'; // Para crear variables reactivas
+import { auth } from '../../firebase/firebase'; // Instancia de autenticación de Firebase
+import {signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup} from 'firebase/auth';
+import { useRouter } from 'vue-router'; // Para redirigir a otras páginas
+import Header from '../Header/Header.vue'; // Componente de encabezado (puede usarse en el template)
 
-// Variables reactivas 
-const correo = ref('');
-const contrasena = ref('');
-const mostrarContrasena = ref(false);
-const error = ref('');
-const enrutador = useRouter();
+// Variables reactivas del formulario y estado
+const correo = ref('');               // Campo para el correo del usuario
+const contrasena = ref('');           // Campo para la contraseña del usuario
+const mostrarContrasena = ref(false); // Booleano que indica si se muestra la contraseña
+const error = ref('');                // Almacena mensajes de error para mostrarlos al usuario
+const enrutador = useRouter();        // Para redirigir tras iniciar sesión
 
-// Función para iniciar sesión con correo y contraseña
+//Función para iniciar sesión con correo y contraseña
 function iniciarSesionConCorreo() {
-  error.value = '';
+  error.value = ''; // Reinicia el mensaje de error
+
+  // Firebase intenta autenticar al usuario con los datos introducidos
   signInWithEmailAndPassword(auth, correo.value, contrasena.value)
     .then(() => {
-      enrutador.push('/perfil'); // Una vez la Sesion iniciada te lleve al perfil
+      // Si inicia sesión correctamente, lo redirige al perfil
+      enrutador.push('/perfil');
     })
     .catch((e) => {
-      console.error(e);
-      error.value = 'Correo o contraseña incorrectos.';
+      // Si hay error (correo mal o contraseña mal), lo muestra
+      console.error(e); // Muestra el error en consola (útil para depuración)
+      error.value = 'Correo o contraseña incorrectos.'; // Mensaje para el usuario
     });
 }
 
-// Función para iniciar sesión con Google
+//Función para iniciar sesión con Google
 function iniciarSesionConGoogle() {
-  error.value = '';
-  const proveedor = new GoogleAuthProvider();
+  error.value = ''; // Reinicia el mensaje de error
+
+  const proveedor = new GoogleAuthProvider(); // Crea el proveedor de Google
+
+  //Abre una ventana emergente para que el usuario inicie sesión con su cuenta de Google
   signInWithPopup(auth, proveedor)
     .then(() => {
-      enrutador.push('/perfil'); // Una vez la Sesion iniciada te lleve al perfil
+      // Si todo va bien, lo redirige al perfil
+      enrutador.push('/perfil');
     })
     .catch((e) => {
-      console.error(e);
-      error.value = 'No se pudo iniciar sesión con Google.';
+      // Si ocurre un error con Google, lo muestra
+      console.error(e); // Error en consola
+      error.value = 'No se pudo iniciar sesión con Google.'; // Mensaje visible para el usuario
     });
 }
 </script>
+
 
 
 <style scoped>

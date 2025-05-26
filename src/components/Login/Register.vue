@@ -64,52 +64,69 @@
     </div>
   </template>
   
-  <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+<script setup>
+/* Importa herramientas de Vue y Firebase */
+import { ref } from 'vue'; // Para crear variables reactivas
+import { useRouter } from 'vue-router'; // Para redireccionar después del registro
 
-import { auth, db } from '../../firebase/firebase';
-import {createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import Encabezado from '../Header/Header.vue';
+/* Importa la configuración de Firebase y funcionalidades de auth y firestore */
+import { auth, db } from '../../firebase/firebase'; // auth: autenticación, db: base de datos
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile} from 'firebase/auth'; // Funciones para registrar e iniciar sesión
+import {collection, addDoc, serverTimestamp} from 'firebase/firestore'; // Para guardar datos en la base de datos
+import Encabezado from '../Header/Header.vue'; // Componente de encabezado (opcional en esta vista)
 
+/* Variables reactivas para almacenar datos del formulario */
 const nombre = ref('');
 const correo = ref('');
 const contrasena = ref('');
-const mostrarContrasena = ref(false);
-const mensajeError = ref('');
-const enrutador = useRouter();
+const mostrarContrasena = ref(false); // Para mostrar u ocultar la contraseña
+const mensajeError = ref(''); // Para mostrar mensajes de error
+const enrutador = useRouter(); // Objeto para redireccionar a otra ruta
 
+/* Función para registrar al usuario con email y contraseña */
 function registrarUsuario() {
-  mensajeError.value = '';
+  mensajeError.value = ''; // Limpiar errores anteriores
+
+  // Intenta registrar al usuario en Firebase Authentication
   createUserWithEmailAndPassword(auth, correo.value, contrasena.value)
     .then((resultado) => {
       const usuario = resultado.user;
+
+      // Actualiza el nombre del usuario en su perfil de Firebase
       return updateProfile(usuario, { displayName: nombre.value })
         .then(() => {
+          // Guarda información adicional del usuario en Firestore
           return addDoc(collection(db, 'users'), {
             uid: usuario.uid,
             nombre: nombre.value,
             email: correo.value,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp() // Guarda fecha y hora actual del servidor
           });
         })
         .then(() => {
+          // Redirige al perfil después del registro
           enrutador.push('/perfil');
         });
     })
     .catch((error) => {
+      // Si ocurre un error, lo muestra en consola y traduce el mensaje
       console.error('Error al registrar:', error.message);
       mensajeError.value = traducirError(error.code);
     });
 }
 
+/* Función para registrar al usuario con Google */
 function registrarConGoogle() {
-  mensajeError.value = '';
-  const proveedor = new GoogleAuthProvider();
+  mensajeError.value = ''; // Limpiar errores
+
+  const proveedor = new GoogleAuthProvider(); // Proveedor de autenticación de Google
+
+  // Inicia sesión con una ventana emergente (popup)
   signInWithPopup(auth, proveedor)
     .then((resultado) => {
       const usuario = resultado.user;
+
+      // Guarda los datos del usuario en Firestore
       return addDoc(collection(db, 'users'), {
         uid: usuario.uid,
         nombre: usuario.displayName || '',
@@ -118,14 +135,17 @@ function registrarConGoogle() {
       });
     })
     .then(() => {
+      // Redirige al perfil después del registro
       enrutador.push('/perfil');
     })
     .catch((error) => {
+      // Si hay un error con Google, muestra un mensaje
       console.error('Error Google signup:', error.message);
       mensajeError.value = 'No se pudo registrar con Google.';
     });
 }
 
+/* Función para traducir los errores comunes de Firebase a mensajes más amigables */
 function traducirError(codigo) {
   switch (codigo) {
     case 'auth/email-already-in-use':
@@ -140,9 +160,21 @@ function traducirError(codigo) {
 }
 </script>
 
-  
-  <style scoped>
-  /* Estilo base para la página de login */
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style scoped>
+/* Estilo base para la página de login */
 .login-page {
   min-height: 100vh;
   display: flex;
