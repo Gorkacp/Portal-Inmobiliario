@@ -127,7 +127,7 @@ onMounted(() => {
 
 function seleccionarImagenes(evento) {
   // Convierte la lista de archivos seleccionados en un array y limita la cantidad a un máximo de 6 archivos
-  const archivos = Array.from(evento.target.files).slice(0, 6)
+  const archivos = Array.from(evento.target.files).slice(0, 6) // Para limitar el n archuvos
   
   // Limpia el array reactivo donde se almacenan las imágenes en base64 para evitar acumular imágenes previas
   imagenes.value = []

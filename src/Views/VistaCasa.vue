@@ -50,7 +50,7 @@ import { useRoute } from 'vue-router'              // useRoute: para leer parám
 
 // Importaciones de Firebase
 import { doc, getDoc } from 'firebase/firestore'   // doc: referencia a documento; getDoc: obtiene el documento
-import { db } from '../firebase/firebase.js'       // configuración de tu proyecto Firebase
+import { db } from '../firebase/firebase.js'       // configuración  Firebase
 
 // Importación de Leaflet
 import L from 'leaflet'                            // L: objeto principal de Leaflet
@@ -74,7 +74,7 @@ onMounted(() => {
     .then((resultado) => {
       if (resultado.exists()) {
         casa.value = resultado.data()
-        // Damos un pequeño retraso para que el DIV del mapa exista en el DOM
+        // Damos un pequeño retraso para que el DIV del mapa exista en el DOM(cargar el mapa)
         setTimeout(mostrarMapa, 200)
       }
     })
@@ -113,7 +113,7 @@ function mostrarMapa() {
       const longitud = parseFloat(resultado.lon)
 
       // Centramos el mapa en la dirección y ponemos un marcador
-      mapa.setView([latitud, longitud], 15)
+      mapa.setView([latitud, longitud], 15) //lvl de zoom en el mapa
       L.marker([latitud, longitud]).addTo(mapa)
     })
     .catch((error) => {

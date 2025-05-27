@@ -77,21 +77,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '../../firebase/firebase';
-import {
-  onAuthStateChanged,
-  signOut,
-  updateProfile,
-  updateEmail,
-} from 'firebase/auth';
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  deleteDoc,
-} from 'firebase/firestore';
+import { onAuthStateChanged, signOut, updateProfile, updateEmail,} from 'firebase/auth';
+import {getFirestore, collection, query, where, getDocs, doc, deleteDoc, } from 'firebase/firestore';
 import Header from '../Header/Header.vue';
 
 const usuario = ref(null);
@@ -200,6 +187,7 @@ function irAVistaCasa(id) {
   router.push({ name: 'VistaCasa', params: { id } });
 }
 
+// Para veroficar que ek usuario inicio sesion
 function verificarSesion() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -215,10 +203,17 @@ function verificarSesion() {
   });
 }
 
+//Montamos la pagina para comprobar que la sesion esta iniciada si no nos llevara a login
 onMounted(() => {
   verificarSesion();
 });
 </script>
+
+
+
+
+
+
 
 <style scoped>
 .pagina-perfil {

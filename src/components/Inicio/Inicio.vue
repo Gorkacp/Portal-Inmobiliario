@@ -65,31 +65,28 @@ const cargando = ref(true);
 const indiceActual = ref(0);
 
 function obtenerProductos() {
+  // Obtiene todos los documentos de la colección 'casas' desde Firestore
   getDocs(collection(db, 'casas'))
-    .then((querySnapshot) => { // Si la conexion con la bd es exitosa se procede
-      // Ejecuta una consulta para obtener todos los documentos de la colección 'casas' en Firestore.
-      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Recorre cada documento de la consulta con .map y crea un nuevo array 'productosObtenidos'
-      // donde cada elemento es un objeto que tiene el 'id' del documento y todos sus datos.
-
+    .then((querySnapshot) => {
+      // Transforma los documentos en objetos con su ID y datos
+      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Transformamos y recorremos todos los documentos de bd
       productosRenta.value = productosObtenidos.filter(producto => producto.tipo === 'Renta');
-      // Filtra los productos para quedarse sólo con los que tienen tipo 'Renta' y los guarda en 'productosRenta'.
-
       productosVenta.value = productosObtenidos.filter(producto => producto.tipo === 'Venta');
-      // Filtra los productos para quedarse sólo con los que tienen tipo 'Venta' y los guarda en 'productosVenta'.
+      // Mezcla aleatoriamente todos los productos y toma los primeros 4
+      const productosAleatorios = productosObtenidos
+        .sort(() => Math.random() - 0.5) .slice(0, 4); 
 
-      productos.value = productosObtenidos;
-      // Guarda todos los productos (sin filtrar) en 'productos'.
+      // Guarda los productos aleatorios en una variable reactiva 
+      productos.value = productosAleatorios;
     })
     .catch(error => {
-      // Si ocurre un error al obtener los datos, lo muestra en la consola.
       console.error('Error al cargar los productos:', error);
     })
     .finally(() => {
-      // Finalmente, si hubo éxito o error, cambia el estado 'cargando' a falso,
       cargando.value = false;
     });
 }
+
 
 onMounted(() => { // El componente se monta y se carga en la página
   obtenerProductos();

@@ -61,7 +61,7 @@ function obtenerCasasEnOferta() {
   const referenciaCasas = collection(baseDatos, 'casas')
 
   // Creamos una consulta para filtrar las casas que tienen el campo 'enOferta' igual a true
-  const consulta = query(referenciaCasas, where('enOferta', '==', true))
+  const consulta = query(referenciaCasas, where('enOferta', '==', true)) //, limit(10)); Si quiero mostrar esa cantidad en vez de infinito
 
   // Ejecutamos la consulta para obtener los documentos que cumplen la condición
   getDocs(consulta)
