@@ -1,5 +1,10 @@
 <template>
   <div class="page-container">
+    <!-- GIF de carga -->
+    <div v-if="cargando" class="loader-overlay">
+      <img src="/loading.gif" alt="Cargando..." class="loader-gif" />
+    </div>
+
     <main class="main-content">
       <h1>Explorar</h1>
     </main>
@@ -65,18 +70,14 @@ const cargando = ref(true);
 const indiceActual = ref(0);
 
 function obtenerProductos() {
-  // Obtiene todos los documentos de la colección 'casas' desde Firestore
   getDocs(collection(db, 'casas'))
     .then((querySnapshot) => {
-      // Transforma los documentos en objetos con su ID y datos
-      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Transformamos y recorremos todos los documentos de bd
+      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       productosRenta.value = productosObtenidos.filter(producto => producto.tipo === 'Renta');
       productosVenta.value = productosObtenidos.filter(producto => producto.tipo === 'Venta');
-      // Mezcla aleatoriamente todos los productos y toma los primeros 4
       const productosAleatorios = productosObtenidos
-      .sort(() => Math.random() - 0.5) .slice(0, 4); 
-
-      // Guarda los productos aleatorios en una variable reactiva 
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 4);
       productos.value = productosAleatorios;
     })
     .catch(error => {
@@ -87,41 +88,28 @@ function obtenerProductos() {
     });
 }
 
-
-onMounted(() => { // El componente se monta y se carga en la página
+onMounted(() => {
   obtenerProductos();
 
   const intervalo = setInterval(() => {
     if (productos.value.length > 0) {
-      indiceActual.value = (indiceActual.value + 1) % productos.value.length; //Incrementa en 1 para pasar a la sigguiente img
+      indiceActual.value = (indiceActual.value + 1) % productos.value.length;
     }
-  }, 4000); 
+  }, 4000);
 
-  onUnmounted(() => { // Limpia el intervalo para que no siga corriendo en segundo plano cuando el componente ya no esté
+  onUnmounted(() => {
     clearInterval(intervalo);
   });
 });
 
 const irACategoria = (categoria) => {
-  router.push({ name: categoria === 'renta' ? 'Alquiler' : 'Venta' }); // Para navegar mediante el router a las categorías de venta o alquiler
+  router.push({ name: categoria === 'renta' ? 'Alquiler' : 'Venta' });
 };
 
 const irAProducto = (id) => {
-  router.push({ name: 'VistaCasa', params: { id } }); // Para navegar a la vista de la casa mediante el carrusel según el id de la publicación
+  router.push({ name: 'VistaCasa', params: { id } });
 };
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
 
 <style scoped>
 * {
@@ -141,6 +129,7 @@ html, body {
   min-height: 100vh;
   padding-bottom: 60px;
   animation: fadeIn 0.6s ease;
+  max-width: 100vw; /* Evita overflow horizontal */
 }
 
 @keyframes fadeIn {
@@ -173,7 +162,7 @@ h1 {
   overflow: hidden;
   width: 100%;
   max-width: 100vw;
-  padding: 0 16px; /* Márgenes laterales restaurados */
+  padding: 0 16px;
   box-sizing: border-box;
 }
 
@@ -253,6 +242,7 @@ h1 {
   margin: 20px;
   flex-wrap: wrap;
   max-width: 100vw;
+  overflow-x: hidden; /* <--- Evita barra horizontal al hacer hover */
 }
 
 .category {
@@ -264,6 +254,9 @@ h1 {
   background-color: #f9f9f9;
   border-radius: 10px;
   padding: 10px;
+  will-change: transform;
+  /* Añadir esto para que no provoque overflow por transform */
+  transform-origin: center center;
 }
 
 .category:hover {
@@ -342,5 +335,24 @@ h1 {
   text-align: center;
   padding: 10px 0;
   z-index: 1000;
+}
+
+/* Loader */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.loader-gif {
+  width: 80px;
+  height: 80px;
 }
 </style>

@@ -30,7 +30,14 @@
         <i class="fas fa-arrow-right icono-flecha"></i>
       </div>
 
-      <div class="seccion-publicaciones" v-if="misPublicaciones.length > 0">
+      <div class="seccion-publicaciones" v-if="cargando">
+        <h2>Mis publicaciones</h2>
+        <div class="loading-container">
+          <img src="/loading.gif" alt="Cargando..." class="gif-carga" />
+        </div>
+      </div>
+
+      <div class="seccion-publicaciones" v-else-if="misPublicaciones.length > 0">
         <h2>Mis publicaciones</h2>
         <div
           v-for="publicacion in misPublicaciones"
@@ -77,8 +84,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '../../firebase/firebase';
-import { onAuthStateChanged, signOut, updateProfile, updateEmail,} from 'firebase/auth';
-import {getFirestore, collection, query, where, getDocs, doc, deleteDoc, } from 'firebase/firestore';
+import { onAuthStateChanged, signOut, updateProfile, updateEmail } from 'firebase/auth';
+import { getFirestore, collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import Header from '../Header/Header.vue';
 
 const usuario = ref(null);
@@ -87,6 +94,7 @@ const modoEdicion = ref(false);
 const nuevoNombre = ref('');
 const nuevoEmail = ref('');
 const misPublicaciones = ref([]);
+const cargando = ref(false); // Nueva variable para controlar el estado de carga
 
 const router = useRouter();
 const db = getFirestore();
@@ -106,21 +114,15 @@ function irAPublicar() {
 }
 
 function guardarCambios() {
-  // Verificamos si hay un usuario autenticado actualmente
   if (auth.currentUser) {
-    // Actualizamos el nombredel usuario actual
     updateProfile(auth.currentUser, { displayName: nuevoNombre.value })
-      .then(() => { // Si la conexion con la bd es exitosa se procede
-        // Si el nuevo email es diferente al que tiene el usuario actual, actualizamos el email
+      .then(() => {
         if (nuevoEmail.value !== auth.currentUser.email) {
-          // Retornamos la promesa de updateEmail para que se encadene en la siguiente then()
           return updateEmail(auth.currentUser, nuevoEmail.value);
         }
       })
-      .then(() => { // Si la conexion con la bd es exitosa se procede
-        // Cuando las actualizaciones hayan terminado, desactivamos el modo edición
+      .then(() => {
         modoEdicion.value = false;
-        // Volvemos a verificar la sesión para refrescar los datos del usuario
         verificarSesion();
       })
       .catch((error) => {
@@ -129,38 +131,26 @@ function guardarCambios() {
   }
 }
 
+async function cargarPublicacionesUsuario(uid) {
+  cargando.value = true; // Activar el gif de carga
 
-function cargarPublicacionesUsuario(uid) {
-  // Creamos una referencia a la colección "casas" en la base de datos Firestore
-  const publicacionesRef = collection(db, 'casas');
-  
-  // Creamos una consulta para filtrar solo las publicaciones donde
-  // el campo 'usuarioID' sea igual al 'uid' que recibe la función
-  const consulta = query(publicacionesRef, where('usuarioID', '==', uid));
+  try {
+    const publicacionesRef = collection(db, 'casas');
+    const consulta = query(publicacionesRef, where('usuarioID', '==', uid));
+    const resultado = await getDocs(consulta);
 
-  // Ejecutamos la consulta para obtener los documentos que coincidan
-  getDocs(consulta)
-    .then((resultado) => { // Si la conexion con la bd es exitosa se procede
-      // Cuando tenemos el resultado, limpiamos el array 'misPublicaciones'
-      misPublicaciones.value = [];
-      
-      // Recorremos cada documento que nos devolvió la consulta
-      resultado.forEach((docu) => {
-        // Obtenemos los datos del documento (la información de la publicación)
-        const publicacion = docu.data();
-        
-        // Añadimos al objeto 'publicacion' una propiedad 'id' con el id del documento
-        publicacion.id = docu.id;
-        
-        // Añadimos la publicación al array reactivo 'misPublicaciones'
-        misPublicaciones.value.push(publicacion);
-      });
-    })
-    .catch((error) => {
-      console.error('Error al obtener publicaciones:', error);
+    misPublicaciones.value = [];
+    resultado.forEach((docu) => {
+      const publicacion = docu.data();
+      publicacion.id = docu.id;
+      misPublicaciones.value.push(publicacion);
     });
+  } catch (error) {
+    console.error('Error al obtener publicaciones:', error);
+  } finally {
+    cargando.value = false; // Desactivar el gif de carga
+  }
 }
-
 
 function irAEditar(idPublicacion) {
   router.push({ name: 'Publicar', params: { id: idPublicacion } });
@@ -168,26 +158,19 @@ function irAEditar(idPublicacion) {
 
 function eliminarPublicacion(idPublicacion) {
   const publicacionRef = doc(db, 'casas', idPublicacion);
-
-  // Usamos la función deleteDoc para eliminar ese documento de Firestore
   deleteDoc(publicacionRef)
-    .then(() => { // Si la conexion con la bd es exitosa se procede
-      // Si la eliminación fue exitosa, recargamos las publicaciones del usuario
-      // para actualizar la vista y mostrar que se ha eliminado la publicación
+    .then(() => {
       cargarPublicacionesUsuario(usuario.value.uid);
     })
     .catch((error) => {
-      // Si hubo un error al intentar eliminar el documento, lo mostramos por consola
       console.error('Error al eliminar publicación:', error);
     });
 }
-
 
 function irAVistaCasa(id) {
   router.push({ name: 'VistaCasa', params: { id } });
 }
 
-// Para veroficar que ek usuario inicio sesion
 function verificarSesion() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -203,12 +186,10 @@ function verificarSesion() {
   });
 }
 
-//Montamos la pagina para comprobar que la sesion esta iniciada si no nos llevara a login
 onMounted(() => {
   verificarSesion();
 });
 </script>
-
 
 
 
@@ -374,5 +355,16 @@ h1 {
 
 .botones-publicacion button:hover {
   background-color: #00a964;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.gif-carga {
+  width: 60px;
+  height: 60px;
 }
 </style>
