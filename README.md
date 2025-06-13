@@ -38,7 +38,7 @@ Durante el desarrollo de este proyecto he afianzado y ampliado mis conocimientos
 
 ## 📤 Despliegue
 El proyecto está desplegado en:
-🌐 [portal-inmobiliario-d4vs.onrender.com]
+🌐 [https://portal-inmobiliario-d4vs.onrender.com/]
 
 ## 🧑‍💻 Autor
 Gorka Carmona Pino.
