@@ -88,13 +88,17 @@ function cargarCasasEnAlquiler() {
       cargando.value = false
     })
     .catch(error => {
-      // Si ocurre un error al hacer la consulta, lo mostramos por consola
       console.error('Error al cargar las casas en alquiler:', error)
-      // Aunque haya error, ocultamos el loader para no quedarnos atrapados
       cargando.value = false
     })
 }
 </script>
+
+
+
+
+
+
 
 
 

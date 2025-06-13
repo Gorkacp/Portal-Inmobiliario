@@ -45,12 +45,12 @@
 
 <script setup>
 // Importaciones de Vue
-import { onMounted, ref } from 'vue'               // ref: para crear variables reactivas; onMounted: se ejecuta al montar el componente
-import { useRoute } from 'vue-router'              // useRoute: para leer parámetros de la URL
+import { onMounted, ref } from 'vue'              
+import { useRoute } from 'vue-router'             
 
 // Importaciones de Firebase
 import { doc, getDoc } from 'firebase/firestore'   // doc: referencia a documento; getDoc: obtiene el documento
-import { db } from '../firebase/firebase.js'       // configuración  Firebase
+import { db } from '../firebase/firebase.js'       
 
 // Importación de Leaflet
 import L from 'leaflet'                            // L: objeto principal de Leaflet

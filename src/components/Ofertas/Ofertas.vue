@@ -85,10 +85,13 @@ function obtenerCasasEnOferta() {
       console.error('Error al obtener casas en oferta:', error)
     })
     .finally(() => {
-      cargando.value = false // Se indica que la carga ha terminado (se oculta el loader) solo cuando termina la consulta real
+      cargando.value = false 
     })
 }
 </script>
+
+
+
 
 
 

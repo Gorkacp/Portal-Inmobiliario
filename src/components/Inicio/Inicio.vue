@@ -74,7 +74,7 @@ function obtenerProductos() {
       productosVenta.value = productosObtenidos.filter(producto => producto.tipo === 'Venta');
       // Mezcla aleatoriamente todos los productos y toma los primeros 4
       const productosAleatorios = productosObtenidos
-        .sort(() => Math.random() - 0.5) .slice(0, 4); 
+      .sort(() => Math.random() - 0.5) .slice(0, 4); 
 
       // Guarda los productos aleatorios en una variable reactiva 
       productos.value = productosAleatorios;
@@ -95,7 +95,7 @@ onMounted(() => { // El componente se monta y se carga en la página
     if (productos.value.length > 0) {
       indiceActual.value = (indiceActual.value + 1) % productos.value.length; //Incrementa en 1 para pasar a la sigguiente img
     }
-  }, 4000); // Cada 4 segundos cambiaríamos de imagen en nuestro carrusel
+  }, 4000); 
 
   onUnmounted(() => { // Limpia el intervalo para que no siga corriendo en segundo plano cuando el componente ya no esté
     clearInterval(intervalo);
@@ -110,6 +110,18 @@ const irAProducto = (id) => {
   router.push({ name: 'VistaCasa', params: { id } }); // Para navegar a la vista de la casa mediante el carrusel según el id de la publicación
 };
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
 
 <style scoped>
 * {
